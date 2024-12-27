@@ -1,77 +1,84 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
+/**
+ * Dieser Code beschreibt eine GUI Anwendung für einen Login Prozess auf die Patientendatenbank.
+ * Es prüft die Eingabe und zeigt eine entsprechende Erfolgsnachricht
+ */
 
 public class Login extends JFrame {
+    private JPanel contentPane;
+    private JTextField userField;
+    private JTextField passwortField;
+    private JButton OKButton;
+    private JButton abbrechenButton;
+    private JPasswordField passwordField;
 
+    /**
+     * Konstruktor, welcher die Benutzeroberfläche, die Eigenschaften und die EventListener initialisiert
+     */
     public Login() {
-        // Titel des Fensters
-        setTitle("Log In");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 200);
-        setLayout(new BorderLayout(10, 10)); // Hauptlayout mit Abständen
+        initializeProperties();
 
-        // Überschrift oben
-        JLabel titleLabel = new JLabel("Die Patientendatenbank", JLabel.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        add(titleLabel, BorderLayout.NORTH);
+        initializeButtonListeners();
 
-        // Panel für Eingabe-Felder (GridLayout mit 2 Zeilen und 1 Spalte)
-        JPanel inputPanel = new JPanel(new GridLayout(2, 1, 5, 5));
-
-        // Benutzername (Label + Textfeld in einem separaten Panel)
-        JPanel userPanel = new JPanel(new BorderLayout(10, 0));
-        JLabel userLabel = new JLabel("User:");
-        JTextField userField = new JTextField();
-        userPanel.add(userLabel, BorderLayout.WEST);
-        userPanel.add(userField, BorderLayout.CENTER);
-        inputPanel.add(userPanel);
-
-        // Passwort (Label + Textfeld in einem separaten Panel)
-        JPanel passPanel = new JPanel(new BorderLayout(10, 0));
-        JLabel passLabel = new JLabel("Passwort:");
-        JPasswordField passField = new JPasswordField();
-        passPanel.add(passLabel, BorderLayout.WEST);
-        passPanel.add(passField, BorderLayout.CENTER);
-        inputPanel.add(passPanel);
-
-        add(inputPanel, BorderLayout.CENTER);
-
-        // Panel für Buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        JButton loginButton = new JButton("OK");
-        JButton cancelButton = new JButton("Abbrechen");
-
-        // ActionListener für Login-Button
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Benutzereingaben abrufen
-                String username = userField.getText();
-                String password = new String(passField.getPassword());
-
-                // Überprüfung der Anmeldedaten
-                if (username.equals("Projektarbeit") && password.equals("1234")) {
-                    JOptionPane.showMessageDialog(null, "Login erfolgreich! Zugriff gewährt.");
-                    // Hier könntest du den Zugriff auf die Datenbank initialisieren
-                } else {
-                    JOptionPane.showMessageDialog(null, "Benutzername oder Passwort falsch!");
-                }
-            }
-        });
-
-        // ActionListener für Cancel-Button
-        cancelButton.addActionListener(e -> System.exit(0));
-
-        buttonPanel.add(loginButton);
-        buttonPanel.add(cancelButton);
-        add(buttonPanel, BorderLayout.SOUTH);
+        initializeView();
     }
 
-    public static void main(String[] args) {
-        // GUI erstellen und sichtbar machen
-        Login login = new Login();
-        login.setVisible(true);
+    /**
+     * Initialisiert die Eigenschaften des Fensters (Titel und wie es sich schließt)
+     */
+    private void initializeProperties() {
+            setTitle("Login");
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        }
+
+    /**
+     * Initialisiert die ActionListener für die Buttons
+     */
+        private void initializeButtonListeners() {
+            // OKButton Listener
+            OKButton.addActionListener(this::actionPerformed);
+
+            // AbbrechenButton Listener
+            abbrechenButton.addActionListener(e -> System.exit(0)); // Beendet die Anwendung
+        }
+
+    /**
+     * Initialisiert die Benutzeroberfläche und fügt contentPane zum Fenster hinzu
+     */
+        private void initializeView() {
+            setContentPane(contentPane); // Das Panel aus der Swing UI Designer Datei setzen
+            pack(); // Fenstergröße anpassen
+        }
+
+    /**
+     * Hauptmethode zum Starten der Anwendung.
+     * Erstellt eine Instanz von Login und zeigt das Fenster an
+     * @param args Kommandozeilenargumente (werden nicht verwendet)
+     */
+        public static void main(String[] args) {
+            SwingUtilities.invokeLater(() -> {
+                Login frame = new Login();
+                frame.setSize(400, 200); // Fenstergröße festlegen
+                frame.setLocationRelativeTo(null); // Zentrieren
+                frame.setVisible(true);
+            });
+        }
+    /**
+     * Initialisiert die EventListener für die Buttons (OK-Button überprüft Eingabe, AbbrechenButton beendet Anwendung)
+     */
+    private void actionPerformed(ActionEvent e) {
+        String username = userField.getText();
+        String password = new String(passwordField.getPassword());
+
+        if (username.equals("Arzt") && password.equals("1234")) {
+            JOptionPane.showMessageDialog(this, "Login erfolgreich!");
+        } else {
+            JOptionPane.showMessageDialog(this, "Ungültige Anmeldedaten.", "Fehler", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }
+
+
+
