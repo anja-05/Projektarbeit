@@ -70,4 +70,27 @@ public class CRUD_Operationen {
             aktualisierePatient(patient);
         }
     }
+
+    public void allePatienten() {
+        String daten = "SELECT * FROM patienten";
+        try (Statement statement = con.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(daten);
+            while (resultSet.next()) {
+                System.out.println(new Patient(
+                        resultSet.getInt("id"),
+                        resultSet.getString("vorname"),
+                        resultSet.getString("nachname"),
+                        resultSet.getString("geburtsdatum"),
+                        resultSet.getInt("sozialversicherungsnummer"),
+                        resultSet.getString("strasse"),
+                        resultSet.getInt("postleitahl"),
+                        resultSet.getString("ort"),
+                        resultSet.getString("telefon"),
+                        resultSet.getString("mail")
+                ));
+            }
+        } catch (SQLException e) {
+            System.err.println("Fehler beim Abrufen: " + e.getMessage());
+        }
+    }
 }

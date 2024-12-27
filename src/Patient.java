@@ -1,5 +1,3 @@
-import java.util.Date;
-
 public class Patient {
 
     private int id;
@@ -13,13 +11,13 @@ public class Patient {
     private String Telefon;
     private String Mail;
 
-    public Patient(int id, String vorname, String nachname, String gebdatum) {
+    public Patient(int id, String vorname, String nachname, String gebdatum, int sozialversicherungsnummer, String strasse, int postleitahl, String adresse, String telefon, String email) {
         this.id = id;
         this.vorname = vorname;
         this.nachname = nachname;
         this.gebdatum = gebdatum;
         this.svNummer = svNummer;
-        this.strasse = strasse;
+        this.strasse = this.strasse;
         this.PLZ = PLZ;
         this.Ort = Ort;
         this.Telefon = Telefon;
