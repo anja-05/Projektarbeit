@@ -5,11 +5,10 @@ import java.awt.event.ActionEvent;
  * Dieser Code beschreibt eine GUI Anwendung für einen Login Prozess auf die Patientendatenbank.
  * Es prüft die Eingabe und zeigt eine entsprechende Erfolgsnachricht
  */
-
 public class Login extends JFrame {
     private JPanel contentPane;
     private JTextField userField;
-    private JTextField passwortField;
+    //private JTextField passwortField;
     private JButton OKButton;
     private JButton abbrechenButton;
     private JPasswordField passwordField;
