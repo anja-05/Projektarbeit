@@ -8,15 +8,17 @@ import java.awt.event.ActionEvent;
 public class Login extends JFrame {
     private JPanel contentPane;
     private JTextField userField;
-    //private JTextField passwortField;
     private JButton OKButton;
     private JButton abbrechenButton;
     private JPasswordField passwordField;
 
+    private Main main;
+
     /**
      * Konstruktor, welcher die Benutzeroberfläche, die Eigenschaften und die EventListener initialisiert
      */
-    public Login() {
+    public Login(Main main) {
+        this.main = main;
         initializeProperties();
 
         initializeButtonListeners();
@@ -27,9 +29,10 @@ public class Login extends JFrame {
     /**
      * Initialisiert die Eigenschaften des Fensters (Titel und wie es sich schließt)
      */
-    private void initializeProperties() {
+        private void initializeProperties() {
             setTitle("Login");
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setSize(500,500);
         }
 
     /**
@@ -52,19 +55,6 @@ public class Login extends JFrame {
         }
 
     /**
-     * Hauptmethode zum Starten der Anwendung.
-     * Erstellt eine Instanz von Login und zeigt das Fenster an
-     * @param args Kommandozeilenargumente (werden nicht verwendet)
-     */
-        public static void main(String[] args) {
-            SwingUtilities.invokeLater(() -> {
-                Login frame = new Login();
-                frame.setSize(400, 200); // Fenstergröße festlegen
-                frame.setLocationRelativeTo(null); // Zentrieren
-                frame.setVisible(true);
-            });
-        }
-    /**
      * Initialisiert die EventListener für die Buttons (OK-Button überprüft Eingabe, AbbrechenButton beendet Anwendung)
      */
     private void actionPerformed(ActionEvent e) {
@@ -73,6 +63,7 @@ public class Login extends JFrame {
 
         if (username.equals("Arzt") && password.equals("1234")) {
             JOptionPane.showMessageDialog(this, "Login erfolgreich!");
+            main.showMainMenu();
         } else {
             JOptionPane.showMessageDialog(this, "Ungültige Anmeldedaten.", "Fehler", JOptionPane.ERROR_MESSAGE);
         }
