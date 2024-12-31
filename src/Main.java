@@ -11,18 +11,24 @@ public class Main {
     private Menu mainMenuGUI;
     private Connection connection;
 
+    //Konstruktor
+    public Main(Connection connection) {
+        this.connection = connection;
+    }
 
     public static void main(String[] args) throws SQLException {
-        Connection con = null;
+        Connection connection = null;
         try {
-            con = DriverManager.getConnection(URL, USER, PASSWORD);
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
             System.out.println("Connected to Database");
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return;
         }
 
+        Connection finalConnection = connection;
         SwingUtilities.invokeLater(() -> {
-            Main controller = new Main();
+            Main controller = new Main(finalConnection);
             controller.showLogin();
         });
 
@@ -44,13 +50,5 @@ public class Main {
             loginGUI.dispose();
         }
     }
-/*
-    public void showPatientForm(String action) {
-        PatientGUI patientFormGUI = new PatientGUI(this, action);
-        patientFormGUI.setVisible(true);
-        if (mainMenuGUI != null) {
-            mainMenuGUI.setVisible(false);
-        }
-    }
-*/
+
 }

@@ -15,7 +15,7 @@ public class CRUD_Operationen {
             statement.setString(3, patient.getGeburtsdatum());
             statement.setInt(4, patient.getSvNummer());
             statement.setString(5, patient.getStrasse());
-            statement.setInt(6, patient.getPLZ());
+            statement.setInt(6, patient.getPostleitzahl());
             statement.setString(7, patient.getOrt());
             statement.setString(8, patient.getTelefon());
             statement.setString(9, patient.getMail());
@@ -41,7 +41,7 @@ public class CRUD_Operationen {
             statement.setString(3, patient.getGeburtsdatum());
             statement.setInt(4, patient.getSvNummer());
             statement.setString(5, patient.getStrasse());
-            statement.setInt(6, patient.getPLZ());
+            statement.setInt(6, patient.getPostleitzahl());
             statement.setString(7, patient.getOrt());
             statement.setString(8, patient.getTelefon());
             statement.setString(9, patient.getMail());

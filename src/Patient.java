@@ -6,10 +6,10 @@ public class Patient {
     private String gebdatum;
     private int svNummer;
     private String strasse;
-    private int PLZ;
-    private String Ort;
-    private String Telefon;
-    private String Mail;
+    private int postleitzahl;
+    private String ort;
+    private String telefon;
+    private String mail;
 
     public Patient(int id, String vorname, String nachname, String gebdatum, int sozialversicherungsnummer, String strasse, int postleitahl, String adresse, String telefon, String email) {
         this.id = id;
@@ -18,10 +18,10 @@ public class Patient {
         this.gebdatum = gebdatum;
         this.svNummer = svNummer;
         this.strasse = this.strasse;
-        this.PLZ = PLZ;
-        this.Ort = Ort;
-        this.Telefon = Telefon;
-        this.Mail = Mail;
+        this.postleitzahl = postleitzahl;
+        this.ort = ort;
+        this.telefon = this.telefon;
+        this.mail = mail;
 
     }
 
@@ -76,31 +76,31 @@ public class Patient {
         this.strasse = strasse;
     }
 
-    public int getPLZ() {
-        return PLZ;
+    public int getPostleitzahl() {
+        return postleitzahl;
     }
-    public void setPLZ(int PLZ) {
-        this.PLZ = PLZ;
+    public void setPostleitzahl(int postleitzahl) {
+        this.postleitzahl = postleitzahl;
     }
 
     public String getOrt() {
-        return Ort;
+        return ort;
     }
     public void setOrt(String ort) {
-        Ort = ort;
+        this.ort = ort;
     }
 
     public String getTelefon() {
-        return Telefon;
+        return telefon;
     }
     public void setTelefon(String telefon) {
-        Telefon = telefon;
+        this.telefon = telefon;
     }
 
     public String getMail() {
-        return Mail;
+        return mail;
     }
     public void setMail(String mail) {
-        Mail = mail;
+        mail = mail;
     }
 }
