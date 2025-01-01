@@ -1,7 +1,10 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Menu extends JFrame {
     private JPanel contentPane;
@@ -15,12 +18,15 @@ public class Menu extends JFrame {
     private JMenuItem createItem;
     private JMenuItem exitItem;
     private JMenuItem helpItem;
+    private JMenuItem allItem;
     private JToolBar toolBar;
     private JButton saveButton;
     private JButton editButton;
     private JButton deleteButton;
     private JButton createButton;
     private JButton exitButton;
+    private JButton allButton;
+    private JLabel date;
     private static Connection connection;
 
     public Menu(Connection connection) {
@@ -33,7 +39,7 @@ public class Menu extends JFrame {
     }
 
     private void initializePropertiesMenu() {
-        setTitle("Menü");
+        setTitle("Patienten DB");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500,500);
         //setVisible(true);
@@ -43,15 +49,18 @@ public class Menu extends JFrame {
     public void initializeMenu(){
         MenuBar= new JMenuBar();
 
-        fileMenu = new JMenu("File");
+        fileMenu = new JMenu("Datei");
         saveItem = new JMenuItem("Save");
         exitItem = new JMenuItem("Exit");
+        allItem = new JMenuItem("Alle Patienten");
         fileMenu.add(saveItem);
         saveItem.setMnemonic(KeyEvent.VK_S);
         fileMenu.add(exitItem);
         exitItem.setMnemonic(KeyEvent.VK_E);
+        fileMenu.add(allItem);
+        allItem.setMnemonic(KeyEvent.VK_A);
 
-        editMenu = new JMenu("Edit");
+        editMenu = new JMenu("Optionen");
         editItem = new JMenuItem("Edit");
         deleteItem = new JMenuItem("Delete");
         createItem = new JMenuItem("Create");
@@ -127,6 +136,26 @@ public class Menu extends JFrame {
         exitButton.addActionListener(e -> System.exit(0));
         toolBar.add(exitButton);
 
+        allButton = new JButton();
+        ImageIcon imageIcon6 = new ImageIcon("Icons/menu_7699137.png");
+        Image image6 = imageIcon6.getImage();
+        Image scaledImage6 = image6.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon6 = new ImageIcon(scaledImage6);
+        allButton.setIcon(scaledIcon6);
+        allButton.setToolTipText("Alle Patienten");
+        allButton.addActionListener(e -> allePatienten());
+        toolBar.add(allButton);
+
+        JLabel dateLabel = new JLabel();
+        dateLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(dateLabel);
+
+        Timer timer = new Timer(1000, e -> {
+            dateLabel.setText(java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")));
+        });
+        timer.start();
+
         add(toolBar, BorderLayout.NORTH);
     }
 
@@ -146,6 +175,7 @@ public class Menu extends JFrame {
         editItem.addActionListener(e -> editPatientData());
         deleteItem.addActionListener(e -> deletePatientData());
         createItem.addActionListener(e -> createNewPatient());
+        allItem.addActionListener(e ->allePatienten());
     }
 
     private void createNewPatient() {
@@ -193,7 +223,7 @@ public class Menu extends JFrame {
                 String vorname = vornameField.getText();
                 String nachname = nachnameField.getText();
                 String gebdatum = geburtsdatumField.getText();
-                int svNummer = Integer.parseInt(sozialversicherungsnummerField.getText());
+                String svNummer = sozialversicherungsnummerField.getText();
                 String strasse = strasseField.getText();
                 int postleitzahl = Integer.parseInt(postleitzahlField.getText());
                 String ort = ortField.getText();
@@ -205,17 +235,25 @@ public class Menu extends JFrame {
                     statement.setString(1, vornameField.getText());
                     statement.setString(2, nachnameField.getText());
                     statement.setString(3, geburtsdatumField.getText());
-                    statement.setInt(4, Integer.parseInt(sozialversicherungsnummerField.getText()));
+                    statement.setString(4, sozialversicherungsnummerField.getText());
                     statement.setString(5, strasseField.getText());
                     statement.setInt(6, Integer.parseInt(postleitzahlField.getText()));
                     statement.setString(7, ortField.getText());
                     statement.setString(8, telefonField.getText());
                     statement.setString(9, mailField.getText());
                     statement.executeUpdate();
-                    JOptionPane.showMessageDialog(this, "Neuer Patient wurde erstellt.");
+
+                    ResultSet rs = statement.getGeneratedKeys();
+                    if (rs.next()) {
+                        int patientenID = rs.getInt(1);
+                        JOptionPane.showMessageDialog(this, "Neuer Patient mit der ID " + patientenID + " wurde erstellt.");
+                    }
                 }
+                resetToDefaultView();
             }catch (SQLException sql){
                 JOptionPane.showMessageDialog(this, "Fehler:" + sql.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+            }catch(NumberFormatException ex){
+                JOptionPane.showMessageDialog(this, "Fehler: Ungültige Eingabe","Fehler", JOptionPane.ERROR_MESSAGE);
             }
         });
         panel.add(saveButton);
@@ -224,6 +262,7 @@ public class Menu extends JFrame {
 
     public void editPatientData(){
         String patientenID = JOptionPane.showInputDialog(this, "Geben Sie die Patienten ID ein:");
+
         if(patientenID == null || patientenID.isEmpty()) return;
         try{
             String query = "SELECT * FROM patient WHERE PatientenID = ?";
@@ -234,39 +273,39 @@ public class Menu extends JFrame {
                 if(set.next()){
                     JPanel panel = new JPanel(new GridLayout(10,2,5,5));
                     panel.add(new JLabel("Vorname:"));
-                    JTextField vornameField = new JTextField();
+                    JTextField vornameField = new JTextField(set.getString("Vorname"));
                     panel.add(vornameField);
 
                     panel.add(new JLabel("Nachname:"));
-                    JTextField nachnameField = new JTextField();
+                    JTextField nachnameField = new JTextField(set.getString("Nachname"));
                     panel.add(nachnameField);
 
                     panel.add(new JLabel("Geburtsdatum:"));
-                    JTextField geburtsdatumField = new JTextField();
+                    JTextField geburtsdatumField = new JTextField(set.getString("Geburtsdatum"));
                     panel.add(geburtsdatumField);
 
                     panel.add(new JLabel("Sozialversicherungsnummer:"));
-                    JTextField sozialversicherungsnummerField = new JTextField();
+                    JTextField sozialversicherungsnummerField = new JTextField(set.getString("Sozialversicherungsnummer"));
                     panel.add(sozialversicherungsnummerField);
 
                     panel.add(new JLabel("Straße:"));
-                    JTextField strasseField = new JTextField();
+                    JTextField strasseField = new JTextField(set.getString("strasse"));
                     panel.add(strasseField);
 
                     panel.add(new JLabel("Postleitzahl:"));
-                    JTextField postleitzahlField = new JTextField();
+                    JTextField postleitzahlField = new JTextField(set.getString("Postleitzahl"));
                     panel.add(postleitzahlField);
 
                     panel.add(new JLabel("Ort:"));
-                    JTextField ortField = new JTextField();
+                    JTextField ortField = new JTextField(set.getString("Ort"));
                     panel.add(ortField);
 
                     panel.add(new JLabel("Telefon:"));
-                    JTextField telefonField = new JTextField();
+                    JTextField telefonField = new JTextField(set.getString("Telefon"));
                     panel.add(telefonField);
 
                     panel.add(new JLabel("Mail:"));
-                    JTextField mailField = new JTextField();
+                    JTextField mailField = new JTextField(set.getString("Mail"));
                     panel.add(mailField);
 
                     JButton saveButton = new JButton("Änderungen gespeichert");
@@ -277,16 +316,18 @@ public class Menu extends JFrame {
                                 update.setString(1, vornameField.getText());
                                 update.setString(2, nachnameField.getText());
                                 update.setString(3, geburtsdatumField.getText());
-                                update.setInt(4, Integer.parseInt(sozialversicherungsnummerField.getText()));
+                                update.setString(4, sozialversicherungsnummerField.getText());
                                 update.setString(5, strasseField.getText());
                                 update.setInt(6, Integer.parseInt(postleitzahlField.getText()));
                                 update.setString(7, ortField.getText());
                                 update.setString(8, telefonField.getText());
                                 update.setString(9, mailField.getText());
+                                update.setInt(10, Integer.parseInt(patientenID));
                                 update.executeUpdate();
 
                                 JOptionPane.showMessageDialog(this, "Patientdaten wurde aktualisiert.");
                             }
+                            resetToDefaultView();
                         } catch (SQLException ex) {
                             JOptionPane.showMessageDialog(this, "Fehler:" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
                         }
@@ -299,11 +340,15 @@ public class Menu extends JFrame {
             }
         } catch(SQLException ex){
             JOptionPane.showMessageDialog(this, "Fehler:" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+        } catch(NullPointerException ex){
+            JOptionPane.showMessageDialog(this, "Fehler: Der Patient existiert nicht.", "Fehler", JOptionPane.ERROR_MESSAGE);
+        }catch(NumberFormatException ex){
+            JOptionPane.showMessageDialog(this, "Fehler: Ungültige Patienten Id", "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void deletePatientData(){
-        String patientenID = JOptionPane.showInputDialog(this,"geben Sie die Patienten ID ein:");
+        String patientenID = JOptionPane.showInputDialog(this,"Geben Sie die Patienten ID ein:");
         if(patientenID == null || patientenID.isEmpty()) return;
 
         try{
@@ -322,9 +367,10 @@ public class Menu extends JFrame {
                             delete.executeUpdate();
                             JOptionPane.showMessageDialog(this, "Patientdaten wurde gelöscht.");
                         }
-                    }else{
-                        JOptionPane.showMessageDialog(this, "Fehler: Der Patient existiert nicht.");
                     }
+                }
+                else{
+                    JOptionPane.showMessageDialog(this, "Fehler: Der Patient mit der Id " + patientenID + " existiert nicht.");
                 }
             }catch(SQLException ex){
                 JOptionPane.showMessageDialog(this, "Fehler:" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -337,6 +383,50 @@ public class Menu extends JFrame {
     }
     private void savePatientData(){
         JOptionPane.showMessageDialog(this, "Gespeichert");
+    }
+
+    private void allePatienten(){
+        String query = "SELECT * FROM patient";
+        try(Statement statement = connection.createStatement()){
+            ResultSet set = statement.executeQuery(query);
+            String [] spalten = {"PatientenID", "Vorname", "Nachname", "Geburtsdatum", "Sozialversicherungsnummer", "Strasse", "Postleitzahl", "Ort", "Telefon", "Mail"};
+
+            List<String []> list = new ArrayList<>();
+            while (set.next()) {
+                String[] row = new String[10];
+                row[0] = String.valueOf(set.getInt("PatientenID"));
+                row[1] = set.getString("Vorname");
+                row[2] = set.getString("Nachname");
+                row[3] = set.getString("Geburtsdatum");
+                row[4] = set.getString("Sozialversicherungsnummer");
+                row[5] = set.getString("Strasse");
+                row[6] = String.valueOf(set.getInt("Postleitzahl"));
+                row[7] = set.getString("Ort");
+                row[8] = set.getString("Telefon");
+                row[9] = set.getString("Mail");
+                list.add(row);
+            }
+
+            String[][] data = list.toArray(new String[0][0]);
+            JTable table = new JTable(new DefaultTableModel(data, spalten){
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            });
+            JScrollPane scrollPane = new JScrollPane(table);
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(scrollPane, BorderLayout.CENTER);
+            updateContentPane(panel);
+        }catch(SQLException ex){
+            JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Patienten" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void resetToDefaultView(){
+        contentPane.removeAll();
+        contentPane.revalidate();
+        contentPane.repaint();
     }
 
     private void updateContentPane(JPanel panel){

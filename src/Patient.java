@@ -4,7 +4,7 @@ public class Patient {
     private String vorname;
     private String nachname;
     private String gebdatum;
-    private int svNummer;
+    private String svNummer;
     private String strasse;
     private int postleitzahl;
     private String ort;
@@ -62,10 +62,10 @@ public class Patient {
         this.gebdatum = gebdatum;
     }
 
-    public int getSvNummer() {
+    public String getSvNummer() {
         return svNummer;
     }
-    public void setSvNummer(int svNummer) {
+    public void setSvNummer(String svNummer) {
         this.svNummer = svNummer;
     }
 
