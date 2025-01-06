@@ -22,6 +22,7 @@ public class Main {
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
             System.out.println("Connected to Database");
         } catch (SQLException e) {
+            System.out.println("Fehler beim Herstellen der Datenbankverbindung");
             e.printStackTrace();
             return;
         }
@@ -34,6 +35,7 @@ public class Main {
 
     }
 
+    //Login
     public void showLogin() {
         if (loginGUI == null) {
             loginGUI = new Login(this);
@@ -41,13 +43,33 @@ public class Main {
         loginGUI.setVisible(true);
     }
 
+    //Menu
     public void showMainMenu() {
         if (mainMenuGUI == null) {
             mainMenuGUI = new Menu(connection);
+            mainMenuGUI.setMainController(this);
         }
         mainMenuGUI.setVisible(true);
         if (loginGUI != null) {
             loginGUI.dispose();
+        }
+    }
+
+    //Patienten-GUI anzeigen
+    public void showCreatePatientGUI(){
+        new CreatePatientGUI(connection);
+    }
+
+    //Verbindung schließen
+    public void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("Datenbankverbindung geschlossen.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Fehler beim Schließen der Datenbankverbindung.");
+            e.printStackTrace();
         }
     }
 

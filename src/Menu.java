@@ -29,6 +29,8 @@ public class Menu extends JFrame {
     private JLabel date;
     private static Connection connection;
 
+    private Main mainController;
+
     public Menu(Connection connection) {
         this.connection = connection;
         initializePropertiesMenu();
@@ -49,10 +51,22 @@ public class Menu extends JFrame {
     public void initializeMenu(){
         MenuBar= new JMenuBar();
 
+        //Menüeintrag für "Patient erstellen"
+        JMenuItem createPatientItem = new JMenuItem("Patient erstellen");
+        createPatientItem.addActionListener(e -> {
+            if (mainController == null) {
+                JOptionPane.showMessageDialog(this, "Main-Controller nicht gesetzt!", "Fehler", JOptionPane.ERROR_MESSAGE);
+            } else {
+                mainController.showCreatePatientGUI();
+            }
+        });
+        MenuBar.add(createPatientItem);
+
         fileMenu = new JMenu("Datei");
         saveItem = new JMenuItem("Save");
         exitItem = new JMenuItem("Exit");
         allItem = new JMenuItem("Alle Patienten");
+
         fileMenu.add(saveItem);
         saveItem.setMnemonic(KeyEvent.VK_S);
         fileMenu.add(exitItem);
@@ -124,6 +138,10 @@ public class Menu extends JFrame {
         createButton.setIcon(scaledIcon4);
         createButton.setToolTipText("Create new Patient");
         createButton.addActionListener(e -> createNewPatient());
+        toolBar.add(createButton);
+
+        //Schnellzugriff für neuen Patienten erstellen
+        createButton.addActionListener(e -> mainController.showCreatePatientGUI());
         toolBar.add(createButton);
 
         exitButton = new JButton();
@@ -436,4 +454,8 @@ public class Menu extends JFrame {
         contentPane.repaint();
     }
 
+    //Methode zur Verbindung mit Main-Klasse
+    public void setMainController(Main mainController) {
+        this.mainController = mainController;
+    }
 }
