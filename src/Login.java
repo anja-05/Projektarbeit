@@ -20,9 +20,7 @@ public class Login extends JFrame {
     public Login(Main main) {
         this.main = main;
         initializeProperties();
-
         initializeButtonListeners();
-
         initializeView();
     }
 
