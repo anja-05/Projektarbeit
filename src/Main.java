@@ -47,7 +47,6 @@ public class Main {
     public void showMainMenu() {
         if (mainMenuGUI == null) {
             mainMenuGUI = new Menu(connection);
-            mainMenuGUI.setMainController(this);
         }
         mainMenuGUI.setVisible(true);
         if (loginGUI != null) {
