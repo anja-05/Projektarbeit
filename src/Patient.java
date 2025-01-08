@@ -4,23 +4,23 @@ public class Patient {
     private String vorname;
     private String nachname;
     private String gebdatum;
-    private String svNummer;
+    private int svNummer;
     private String strasse;
     private int postleitzahl;
     private String ort;
     private String telefon;
     private String mail;
 
-    public Patient(int id, String vorname, String nachname, String gebdatum, int sozialversicherungsnummer, String strasse, int postleitahl, String adresse, String telefon, String email) {
+    public Patient(int id, String vorname, String nachname, String gebdatum, int svNummer, String strasse, int postleitzahl, String ort, String telefon, String mail) {
         this.id = id;
         this.vorname = vorname;
         this.nachname = nachname;
         this.gebdatum = gebdatum;
         this.svNummer = svNummer;
-        this.strasse = this.strasse;
+        this.strasse = strasse;
         this.postleitzahl = postleitzahl;
         this.ort = ort;
-        this.telefon = this.telefon;
+        this.telefon = telefon;
         this.mail = mail;
 
     }
@@ -62,10 +62,10 @@ public class Patient {
         this.gebdatum = gebdatum;
     }
 
-    public String getSvNummer() {
+    public int getSvNummer() {
         return svNummer;
     }
-    public void setSvNummer(String svNummer) {
+    public void setSvNummer(int svNummer) {
         this.svNummer = svNummer;
     }
 
