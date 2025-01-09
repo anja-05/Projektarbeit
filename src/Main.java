@@ -44,7 +44,17 @@ public class Main {
     }
 
     //Menu
-    public void showMainMenu() {
+    public void showArztMenu() {
+        if (mainMenuGUI == null) {
+            mainMenuGUI = new Menu(connection);
+        }
+        mainMenuGUI.setVisible(true);
+        if (loginGUI != null) {
+            loginGUI.dispose();
+        }
+    }
+
+    public void showRezeptionMenu() {
         if (mainMenuGUI == null) {
             mainMenuGUI = new Menu(connection);
         }
