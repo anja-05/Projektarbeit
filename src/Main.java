@@ -2,13 +2,13 @@ import javax.swing.*;
 import java.sql.*;
 
 public class Main {
-
     private static final String URL = "jdbc:mysql://localhost:3306/datenbank_patienten";
     private static final String USER = "root";
     private static final String PASSWORD = "root";
 
     private Login loginGUI;
-    private Menu mainMenuGUI;
+    private ArztMenu arztMenuGUI;
+    private RezeptionMenu rezeptionMenuGUI;
     private Connection connection;
 
     //Konstruktor
@@ -32,7 +32,6 @@ public class Main {
             Main controller = new Main(finalConnection);
             controller.showLogin();
         });
-
     }
 
     //Login
@@ -45,20 +44,20 @@ public class Main {
 
     //Menu
     public void showArztMenu() {
-        if (mainMenuGUI == null) {
-            mainMenuGUI = new Menu(connection);
+        if (arztMenuGUI == null) {
+            arztMenuGUI = new ArztMenu(connection);
         }
-        mainMenuGUI.setVisible(true);
+        arztMenuGUI.setVisible(true);
         if (loginGUI != null) {
             loginGUI.dispose();
         }
     }
 
     public void showRezeptionMenu() {
-        if (mainMenuGUI == null) {
-            mainMenuGUI = new Menu(connection);
+        if (rezeptionMenuGUI == null) {
+            rezeptionMenuGUI = new RezeptionMenu(connection);
         }
-        mainMenuGUI.setVisible(true);
+        rezeptionMenuGUI.setVisible(true);
         if (loginGUI != null) {
             loginGUI.dispose();
         }
@@ -81,5 +80,4 @@ public class Main {
             e.printStackTrace();
         }
     }
-
 }

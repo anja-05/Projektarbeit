@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Menu extends JFrame {
+public class ArztMenu extends JFrame {
     private JPanel contentPane;
     //Bausteine für MenuBar
     private JMenuBar MenuBar;
@@ -32,7 +32,7 @@ public class Menu extends JFrame {
 
     private static Connection connection;
 
-    public Menu(Connection connection) {
+    public ArztMenu(Connection connection) {
         this.connection = connection;
         initializePropertiesMenu();
         initializeMenu();
