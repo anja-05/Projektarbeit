@@ -64,10 +64,6 @@ public class Main {
         }
     }
 
-    //Patienten-GUI anzeigen
-    public void showCreatePatientGUI(){
-        new CreatePatientGUI(connection);
-    }
 
     //Verbindung schließen
     public void closeConnection() {
