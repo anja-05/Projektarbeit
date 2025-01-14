@@ -13,7 +13,7 @@ public class CRUD_Operationen {
             statement.setString(1, patient.getVorname());
             statement.setString(2, patient.getNachname());
             statement.setString(3, patient.getGeburtsdatum());
-            statement.setInt(4, patient.getSvNummer());
+            statement.setInt(4, patient.getSozialversicherungsnummer());
             statement.setString(5, patient.getStrasse());
             statement.setInt(6, patient.getPostleitzahl());
             statement.setString(7, patient.getOrt());
@@ -39,7 +39,7 @@ public class CRUD_Operationen {
             statement.setString(1, patient.getVorname());
             statement.setString(2, patient.getNachname());
             statement.setString(3, patient.getGeburtsdatum());
-            statement.setInt(4, patient.getSvNummer());
+            statement.setInt(4, patient.getSozialversicherungsnummer());
             statement.setString(5, patient.getStrasse());
             statement.setInt(6, patient.getPostleitzahl());
             statement.setString(7, patient.getOrt());
@@ -70,7 +70,7 @@ public class CRUD_Operationen {
             aktualisierePatient(patient);
         }
     }
-
+/*
     public void allePatienten() {
         String daten = "SELECT * FROM patienten";
         try (Statement statement = con.createStatement()) {
@@ -85,12 +85,10 @@ public class CRUD_Operationen {
                         resultSet.getString("strasse"),
                         resultSet.getInt("postleitahl"),
                         resultSet.getString("ort"),
-                        resultSet.getString("telefon"),
-                        resultSet.getString("mail")
-                ));
+                        resultSet.getString("telefon"), resultSet.getString("mail"),));
             }
         } catch (SQLException e) {
             System.err.println("Fehler beim Abrufen: " + e.getMessage());
         }
-    }
+    }*/
 }

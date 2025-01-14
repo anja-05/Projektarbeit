@@ -21,9 +21,12 @@ public class RezeptionPatientErstellen extends JFrame {
     private String geburtsdatum;
     private String svn;
     private String versicherung;
+
+    private PatientDAO patientDAO;
     
-    public RezeptionPatientErstellen(Connection connection) {
+    public RezeptionPatientErstellen(Connection connection, PatientDAO patientDAO) {
         this.connection = connection;
+        this.patientDAO = patientDAO;
         initializeProperties();
         initializeView();
         initializeButtonListeners();
@@ -59,8 +62,16 @@ public class RezeptionPatientErstellen extends JFrame {
         svn = svnTextField.getText();
         versicherung = (String) versicherungComboBox.getSelectedItem();
 
+        Patient patient = new Patient();
+        patient.setAnrede(anrede);
+        patient.setVorname(vorname);
+        patient.setNachname(nachname);
+        patient.setGeburtsdatum(geburtsdatum);
+        patient.setSozialversicherungsnummer(Integer.parseInt(svn));
+        patient.setVersicherung(versicherung);
+
         this.dispose();
-        RezeptionPatientKontaktdaten kontaktFenster = new RezeptionPatientKontaktdaten(connection, anrede, vorname, nachname, geburtsdatum, svn, versicherung);
+        RezeptionPatientKontaktdaten kontaktFenster = new RezeptionPatientKontaktdaten(patient, patientDAO);
         kontaktFenster.setVisible(true);
     }
 
@@ -71,7 +82,7 @@ public class RezeptionPatientErstellen extends JFrame {
         this.geburtsdatum = geburtsdatum;
         this.svn = svn;
         this.versicherung = versicherung;
-        // Daten in die Felder laden
+
         AnredeComboBox.setSelectedItem(anrede);
         vornameTextField.setText(vorname);
         nachnameTextField.setText(nachname);

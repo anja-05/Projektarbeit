@@ -194,7 +194,8 @@ public class RezeptionMenu extends JFrame {
     }
 
     private void createNewPatient() {
-        RezeptionPatientErstellen patientErstellen = new RezeptionPatientErstellen(connection);
+        PatientDAO patientDAO = new PatientDAO(connection);
+        RezeptionPatientErstellen patientErstellen = new RezeptionPatientErstellen(connection, patientDAO);
         patientErstellen.setVisible(true);
     }
 
