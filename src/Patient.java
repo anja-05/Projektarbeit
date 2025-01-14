@@ -1,10 +1,12 @@
+import java.sql.Date;
+
 public class Patient {
 
-    private int id;
+    private int patientID;
     private String anrede;
     private String vorname;
     private String nachname;
-    private String geburtsdatum;
+    private Date geburtsdatum;
     private int sozialversicherungsnummer;
     private String versicherung;
     private String strasse;
@@ -19,11 +21,11 @@ public class Patient {
     }
 
     public Patient(int id, String anrede, String vorname, String nachname, String geburtsdatum, int sozialversicherungsnummer, String versicherung, String strasse, int postleitzahl, String ort, String telefon, String mail, String bundesland) {
-        this.id = id;
+        this.patientID = id;
         this.anrede = anrede;
         this.vorname = vorname;
         this.nachname = nachname;
-        this.geburtsdatum = geburtsdatum;
+        this.geburtsdatum = Date.valueOf(geburtsdatum);
         this.sozialversicherungsnummer = sozialversicherungsnummer;
         this.versicherung = versicherung;
         this.strasse = strasse;
@@ -44,11 +46,11 @@ public class Patient {
                 '}';
     }*/
 
-    public int getId() {
-        return id;
+    public int getpatientID() {
+        return patientID;
     }
-    public void setId(int id) {
-        this.id = id;
+    public void setPatientID(int patientID) {
+        this.patientID = patientID;
     }
 
     public String getAnrede() {
@@ -72,11 +74,11 @@ public class Patient {
         this.nachname = nachname;
     }
 
-    public String getGeburtsdatum() {
+    public Date getGeburtsdatum() {
         return geburtsdatum;
     }
     public void setGeburtsdatum(String geburtsdatum) {
-        this.geburtsdatum = this.geburtsdatum;
+        this.geburtsdatum = Date.valueOf(geburtsdatum);
     }
 
     public int getSozialversicherungsnummer() {
@@ -125,7 +127,7 @@ public class Patient {
         return mail;
     }
     public void setMail(String mail) {
-        mail = mail;
+        this.mail = mail;
     }
 
     public String getBundesland() {

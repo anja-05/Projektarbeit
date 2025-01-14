@@ -23,24 +23,28 @@ public class PatientDAO {
     }
 
     public int getKrankenkassenID(String versicherung) throws SQLException {
-        String query = "SELECT id FROM krankenkasse WHERE name = ?";
+        String query = "SELECT krankenkassenID FROM krankenkasse WHERE bezeichnung = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, versicherung);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getInt("id");
+                return resultSet.getInt("krankenkassenID");
             }
         }
         return -1; // Wenn nicht gefunden
     }
 
+    public Connection getConnection() {
+        return connection;
+    }
+
     public boolean savePatient(Patient patient) {
         String query = "INSERT INTO patient (anrede, vorname, nachname, geburtsdatum, sozialversicherungsnummer, strasse, postleitzahl, ort, telefon, mail, bundeslandID, krankenkassenID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, patient.getAnrede());
             preparedStatement.setString(2, patient.getVorname());
             preparedStatement.setString(3, patient.getNachname());
-            preparedStatement.setString(4, patient.getGeburtsdatum());
+            preparedStatement.setDate(4, patient.getGeburtsdatum());
             preparedStatement.setInt(5, patient.getSozialversicherungsnummer());
             preparedStatement.setString(6, patient.getStrasse());
             preparedStatement.setInt(7, patient.getPostleitzahl());
@@ -51,10 +55,23 @@ public class PatientDAO {
             preparedStatement.setInt(12, getKrankenkassenID(patient.getVersicherung()));
 
             int rowsInserted = preparedStatement.executeUpdate();
-            return rowsInserted > 0; // True, wenn erfolgreich gespeichert
+
+            if (rowsInserted > 0) {
+                // Abrufen der automatisch generierten ID
+                try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        patient.setPatientID(generatedKeys.getInt(1)); // Setze die generierte ID im Patient-Objekt
+                        System.out.println("Patient erfolgreich gespeichert mit ID: " + patient.getpatientID());
+                    } else {
+                        throw new SQLException("Fehler beim Abrufen der generierten ID.");
+                    }
+                }
+                return true; // Speichern war erfolgreich
+            }
+            return false; // Kein Datensatz eingefügt
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // Fehler
+            return false; // Fehler beim Speichern
         }
     }
 
@@ -64,7 +81,7 @@ public class PatientDAO {
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, patient.getVorname());
             stmt.setString(2, patient.getNachname());
-            stmt.setString(3, patient.getGeburtsdatum());
+            stmt.setDate(3, patient.getGeburtsdatum());
             stmt.setInt(4, patient.getSozialversicherungsnummer());
             stmt.setString(5, patient.getStrasse());
             stmt.setInt(6, patient.getPostleitzahl());

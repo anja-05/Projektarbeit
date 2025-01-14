@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 /**
@@ -11,6 +12,9 @@ public class Login extends JFrame {
     private JButton OKButton;
     private JButton abbrechenButton;
     private JComboBox rolleComboBox1;
+    private JLabel rolleLabel;
+    private JLabel userLabel;
+    private JLabel passwortLabel;
 
     private Main main;
 

@@ -42,14 +42,54 @@ public class RezeptionPatientKontaktdaten extends JFrame {
         }
 
     private void returnToRezeptionPatientErstellen() {
+        saveCurrentFieldsToPatient();
         dispose();
+        RezeptionPatientErstellen patientErstellenFenster = new RezeptionPatientErstellen(patientDAO.getConnection(), patientDAO);
+        patientErstellenFenster.setFields(patient);
+        patientErstellenFenster.setVisible(true);
     }
 
-    private void speichernPerformed(ActionEvent actionEvent) {
+    private void saveCurrentFieldsToPatient() {
         patient.setTelefon(telTextField.getText());
         patient.setMail(mailTextField.getText());
         patient.setStrasse(strasseTextField.getText());
-        patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
+        try {
+            patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
+        } catch (NumberFormatException e) {
+            patient.setPostleitzahl(0); // Standardwert bei ungültiger Eingabe
+        }
+        patient.setOrt(ortTextField.getText());
+        patient.setBundesland((String) bundeslandComboBox.getSelectedItem());
+    }
+
+    public void setFields(Patient patient) {
+        this.patient = patient;
+
+        if (patient != null) {
+            telTextField.setText(patient.getTelefon());
+            mailTextField.setText(patient.getMail());
+            strasseTextField.setText(patient.getStrasse());
+            pznTextField.setText(patient.getPostleitzahl() == 0 ? "" : String.valueOf(patient.getPostleitzahl())); // Leeres Feld für 0
+            ortTextField.setText(patient.getOrt());
+            bundeslandComboBox.setSelectedItem(patient.getBundesland());
+        }
+    }
+
+    private void speichernPerformed(ActionEvent actionEvent) {
+        Object selectedItem = bundeslandComboBox.getSelectedItem();
+        if (selectedItem == null || selectedItem.toString().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Bitte wählen Sie ein Bundesland aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        patient.setTelefon(telTextField.getText());
+        patient.setMail(mailTextField.getText());
+        patient.setStrasse(strasseTextField.getText());
+        try {
+            patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Die Postleitzahl muss eine Zahl sein.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         patient.setOrt(ortTextField.getText());
         patient.setBundesland((String) bundeslandComboBox.getSelectedItem());
 
