@@ -159,7 +159,11 @@ public class ArztMenu extends JFrame {
         ImageIcon scaledIcon6 = new ImageIcon(scaledImage6);
         allButton.setIcon(scaledIcon6);
         allButton.setToolTipText("Alle Patienten");
-        allButton.addActionListener(e -> allePatienten());
+        allButton.addActionListener(e -> {
+            PatientDAO patientDAO = new PatientDAO(connection);
+            AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
+            fenster.setVisible(true);
+        });
         toolBar.add(allButton);
 
         JLabel dateLabel = new JLabel();
@@ -190,7 +194,11 @@ public class ArztMenu extends JFrame {
         editItem.addActionListener(e -> patientBearbeiten());
         deleteItem.addActionListener(e -> deletePatientData());
         createItem.addActionListener(e -> createNewPatient());
-        allItem.addActionListener(e ->allePatienten());
+        allItem.addActionListener(e ->{
+                    PatientDAO patientDAO = new PatientDAO(connection);
+                    AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
+                    fenster.setVisible(true);
+                });
         helpItem.addActionListener(e-> {
             JOptionPane.showMessageDialog(this,
                     "Bei Problemen kontaktieren Sie uns:\nTelefon: +49 123 456 789\nWebsite: https://www.support-website.com",
@@ -452,47 +460,6 @@ public class ArztMenu extends JFrame {
             throw new RuntimeException(e);
         } catch (HeadlessException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void allePatienten(){
-        String query = "SELECT patient.PatientenID, patient.Vorname, patient.Nachname, patient.Geburtsdatum, patient.Sozialversicherungsnummer, patient.Strasse, patient.Postleitzahl, patient.Ort, patient.Telefon, patient.Mail, krankenkasse.Bezeichnung AS Krankenkasse " +
-                "FROM patient " +
-                "Left JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID";
-        try(Statement statement = connection.createStatement()){
-            ResultSet set = statement.executeQuery(query);
-            String [] spalten = {"PatientenID", "Vorname", "Nachname", "Geburtsdatum", "Sozialversicherungsnummer", "Strasse", "Postleitzahl", "Ort", "Telefon", "Mail", "Krankenkasse"};
-
-            List<String []> list = new ArrayList<>();
-            while (set.next()) {
-                String[] row = new String[11];
-                row[0] = String.valueOf(set.getInt("PatientenID"));
-                row[1] = set.getString("Vorname");
-                row[2] = set.getString("Nachname");
-                row[3] = set.getString("Geburtsdatum");
-                row[4] = set.getString("Sozialversicherungsnummer");
-                row[5] = set.getString("Strasse");
-                row[6] = String.valueOf(set.getInt("Postleitzahl"));
-                row[7] = set.getString("Ort");
-                row[8] = set.getString("Telefon");
-                row[9] = set.getString("Mail");
-                row[10] = set.getString("Krankenkasse");
-                list.add(row);
-            }
-
-            String[][] data = list.toArray(new String[0][0]);
-            JTable table = new JTable(new DefaultTableModel(data, spalten){
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return false;
-                }
-            });
-            JScrollPane scrollPane = new JScrollPane(table);
-            JPanel panel = new JPanel(new BorderLayout());
-            panel.add(scrollPane, BorderLayout.CENTER);
-            updateContentPane(panel);
-        }catch(SQLException ex){
-            JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Patienten " + ex.getMessage(), "Fehler ", JOptionPane.ERROR_MESSAGE);
         }
     }
 

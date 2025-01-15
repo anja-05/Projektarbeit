@@ -10,6 +10,7 @@ public class Main {
     private ArztMenu arztMenuGUI;
     private RezeptionMenu rezeptionMenuGUI;
     private Connection connection;
+    private PatientDAO patientDAO;
 
     //Konstruktor
     public Main(Connection connection) {
@@ -56,7 +57,7 @@ public class Main {
 
     public void showRezeptionMenu() {
         if (rezeptionMenuGUI == null) {
-            rezeptionMenuGUI = new RezeptionMenu(connection);
+            rezeptionMenuGUI = new RezeptionMenu(connection, patientDAO);
         }
         rezeptionMenuGUI.setVisible(true);
         if (loginGUI != null) {
