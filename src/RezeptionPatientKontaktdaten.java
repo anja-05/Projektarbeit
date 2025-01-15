@@ -49,7 +49,7 @@ public class RezeptionPatientKontaktdaten extends JFrame {
         patientErstellenFenster.setVisible(true);
     }
 
-    private void saveCurrentFieldsToPatient() {
+    public void saveCurrentFieldsToPatient() {
         patient.setTelefon(telTextField.getText());
         patient.setMail(mailTextField.getText());
         patient.setStrasse(strasseTextField.getText());
