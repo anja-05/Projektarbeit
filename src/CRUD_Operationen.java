@@ -12,7 +12,7 @@ public class CRUD_Operationen {
         try (PreparedStatement statement = con.prepareStatement(daten, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, patient.getVorname());
             statement.setString(2, patient.getNachname());
-            statement.setString(3, patient.getGeburtsdatum());
+            statement.setDate(3, patient.getGeburtsdatum());
             statement.setInt(4, patient.getSozialversicherungsnummer());
             statement.setString(5, patient.getStrasse());
             statement.setInt(6, patient.getPostleitzahl());
@@ -25,7 +25,7 @@ public class CRUD_Operationen {
             ResultSet generatedKeys = statement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 int generatedId = generatedKeys.getInt(1);
-                patient.setId(generatedId);
+                patient.setPatientID(generatedId);
                 System.out.println("Patient wurde erfolgreich eingefügt. ID lautet: " + generatedId);
             }
         } catch (SQLException e) {
@@ -38,7 +38,7 @@ public class CRUD_Operationen {
         try (PreparedStatement statement = con.prepareStatement(daten)) {
             statement.setString(1, patient.getVorname());
             statement.setString(2, patient.getNachname());
-            statement.setString(3, patient.getGeburtsdatum());
+            statement.setDate(3, patient.getGeburtsdatum());
             statement.setInt(4, patient.getSozialversicherungsnummer());
             statement.setString(5, patient.getStrasse());
             statement.setInt(6, patient.getPostleitzahl());
@@ -64,7 +64,7 @@ public class CRUD_Operationen {
     }
 
     public void patientSpeichern(Patient patient) {
-        if (patient.getId() == 0) {
+        if (patient.getpatientID() == 0) {
             neuenPatientenAnlegen(patient);
         } else {
             aktualisierePatient(patient);
