@@ -20,12 +20,12 @@ public class Patient {
     public Patient() {
     }
 
-    public Patient(int id, String anrede, String vorname, String nachname, String geburtsdatum, int sozialversicherungsnummer, String versicherung, String strasse, int postleitzahl, String ort, String telefon, String mail, String bundesland) {
+    public Patient(int id, String anrede, String vorname, String nachname, Date geburtsdatum, int sozialversicherungsnummer, String versicherung, String strasse, int postleitzahl, String ort, String telefon, String mail, String bundesland) {
         this.patientID = id;
         this.anrede = anrede;
         this.vorname = vorname;
         this.nachname = nachname;
-        this.geburtsdatum = Date.valueOf(geburtsdatum);
+        this.geburtsdatum = geburtsdatum;
         this.sozialversicherungsnummer = sozialversicherungsnummer;
         this.versicherung = versicherung;
         this.strasse = strasse;
@@ -77,8 +77,8 @@ public class Patient {
     public Date getGeburtsdatum() {
         return geburtsdatum;
     }
-    public void setGeburtsdatum(String geburtsdatum) {
-        this.geburtsdatum = Date.valueOf(geburtsdatum);
+    public void setGeburtsdatum(Date geburtsdatum) {
+        this.geburtsdatum = geburtsdatum;
     }
 
     public int getSozialversicherungsnummer() {

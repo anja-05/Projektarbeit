@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
+import java.sql.Date;
+import java.util.Locale;
 
 public class RezeptionPatientErstellen extends JFrame {
     private JPanel contentPane;
@@ -55,7 +57,13 @@ public class RezeptionPatientErstellen extends JFrame {
             patient.setAnrede((String) AnredeComboBox.getSelectedItem());
             patient.setVorname(vornameTextField.getText());
             patient.setNachname(nachnameTextField.getText());
-            patient.setGeburtsdatum(geburtsdatumTextField.getText());
+            try {
+                String geburtsdatumString = geburtsdatumTextField.getText();
+                Date geburtsdatum = Date.valueOf(geburtsdatumString); // java.sql.Date erstellen
+                patient.setGeburtsdatum(geburtsdatum); // Funktioniert, wenn setGeburtsdatum(java.sql.Date) erwartet
+            } catch (IllegalArgumentException e) {
+                JOptionPane.showMessageDialog(null, "Ungültiges Datum. Bitte ein Datum im Format yyyy-MM-dd eingeben.");
+            }
             try {
                 patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
             } catch (NumberFormatException ex) {
@@ -91,7 +99,7 @@ public class RezeptionPatientErstellen extends JFrame {
 
             java.sql.Date geburtsdatum = patient.getGeburtsdatum();
             if (geburtsdatum != null) {
-                SimpleDateFormat formatter = new SimpleDateFormat("yyy.MM.dd");
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
                 geburtsdatumTextField.setText(formatter.format(geburtsdatum)); // Formatieren und setzen
             }
             svnTextField.setText(String.valueOf(patient.getSozialversicherungsnummer()));
