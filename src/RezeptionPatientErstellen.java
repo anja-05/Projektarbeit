@@ -24,6 +24,7 @@ public class RezeptionPatientErstellen extends JFrame {
     private PatientDAO patientDAO;
     private Patient patient;
 
+
     public RezeptionPatientErstellen(Connection connection, PatientDAO patientDAO) {
         this.connection = connection;
         this.patientDAO = patientDAO;
@@ -79,6 +80,7 @@ public class RezeptionPatientErstellen extends JFrame {
             // Weiterleitung mit demselben Patient-Objekt
             dispose();
             RezeptionPatientKontaktdaten kontaktFenster = new RezeptionPatientKontaktdaten(patient, patientDAO);
+            kontaktFenster.setFields(patient);
             kontaktFenster.setVisible(true);
         }
     }
