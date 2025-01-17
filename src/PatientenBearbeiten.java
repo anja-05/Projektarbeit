@@ -76,16 +76,51 @@ public class PatientenBearbeiten extends JFrame {
                 svnField.getText().trim().isEmpty()) {
             return false;
         }
+        if (anredeComboBox1.getSelectedIndex() == -1) {
+            JOptionPane.showMessageDialog(this, "Bitte wählen Sie eine Anrede aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        if (versicherungComboBox.getSelectedIndex() == -1) {
+            JOptionPane.showMessageDialog(this, "Bitte wählen Sie eine Versicherung aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        if (bundeslandComboBox.getSelectedIndex() == -1) {
+            JOptionPane.showMessageDialog(this, "Bitte wählen Sie ein Bundesland aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
         return true;
     }
 
     private void saveToDatabase() {
-        System.out.println("Speichern in die Datenbank...");
-        System.out.println("Vorname: " + vornameField.getText());
-        System.out.println("Nachname: " + nachnameField.getText());
-        System.out.println("Geburtstag: " + geburtstagField.getText());
-        System.out.println("Sozialversicherungsnummer: " + svnField.getText());
-        System.out.println("Versicherung: " + versicherungComboBox.getSelectedItem());
-        System.out.println("Bundesland: " + bundeslandComboBox.getSelectedItem());
+        String sql = "INSERT INTO patienten (anrede, vorname, nachname, geburtstag, sozialversicherungsnummer, versicherung, telefon, mail, strasse, postleitzahl, ort, bundesland) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            // Persönliche Daten
+            preparedStatement.setString(1, anredeComboBox1.getSelectedItem().toString());
+            preparedStatement.setString(2, vornameField.getText().trim());
+            preparedStatement.setString(3, nachnameField.getText().trim());
+            preparedStatement.setString(4, geburtstagField.getText().trim());
+            preparedStatement.setString(5, svnField.getText().trim());
+            preparedStatement.setString(6, versicherungComboBox.getSelectedItem().toString());
+            // Kontaktdaten
+            preparedStatement.setString(7, telefonField.getText().trim());
+            preparedStatement.setString(8, mailField.getText().trim());
+            preparedStatement.setString(9, strasseField.getText().trim());
+            preparedStatement.setString(10, postleitzahlField.getText().trim());
+            preparedStatement.setString(11, ortField.getText().trim());
+            preparedStatement.setString(12, bundeslandComboBox.getSelectedItem().toString());
+
+            // Ausführen der SQL-Abfrage
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(this, "Daten wurden erfolgreich gespeichert!", "Erfolg", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Fehler beim Speichern der Daten.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Daten konnten nicht gespeichert werden: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

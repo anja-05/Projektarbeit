@@ -7,6 +7,9 @@ public class AllePatientenAnzeigen extends JFrame {
     private JPanel contentPane;
     private JTable patientenTable;
     private JButton zurückButton;
+    private JTextField suchenField;
+    private JButton suchenButton;
+    private JButton allePatientenButton;
 
     private PatientDAO patientDAO;
 
@@ -40,7 +43,18 @@ public class AllePatientenAnzeigen extends JFrame {
         patientenTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         JScrollPane scrollPane = new JScrollPane(patientenTable);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         contentPane.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel suchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        suchenField = new JTextField(20);
+        suchenButton = new JButton("Suchen");
+        allePatientenButton = new JButton("Alle Patienten anzeigen");
+        suchPanel.add(new JLabel("Suche: "));
+        suchPanel.add(suchenField);
+        suchPanel.add(suchenButton);
+        suchPanel.add(allePatientenButton);
+        contentPane.add(suchPanel, BorderLayout.NORTH);
 
         zurückButton = new JButton("Zurück");
         JPanel buttonPanel = new JPanel();
@@ -51,6 +65,34 @@ public class AllePatientenAnzeigen extends JFrame {
     private void initializeButtonListeners() {
         zurückButton.addActionListener(e -> {
             dispose();
+        });
+
+        suchenButton.addActionListener(e -> {
+            String regex = suchenField.getText().trim();
+            if (!regex.isEmpty()) {
+                try {
+                    List<Patient> gefiltertePatienten = patientDAO.suchePatientenMitRegex(regex);
+                    aktualisiereTabelle(gefiltertePatienten);
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Fehler bei der Suche: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                try {
+                    // Zeigt alle Patienten an, wenn das Suchfeld leer ist
+                    aktualisiereTabelle(patientDAO.getAllePatienten());
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Patienten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        allePatientenButton.addActionListener(e -> {
+            try {
+                List<Patient> allePatienten = patientDAO.getAllePatienten();
+                aktualisiereTabelle(allePatienten);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Patienten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+            }
         });
     }
 

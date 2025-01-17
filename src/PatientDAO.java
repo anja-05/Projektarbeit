@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class PatientDAO {
     private final Connection connection;
@@ -108,6 +109,35 @@ public class PatientDAO {
             }
             return patientenListe;
         }
+    }
+
+    public List<Patient> suchePatientenMitRegex(String regex) throws SQLException {
+        List<Patient> allePatienten = getAllePatienten();
+        List<Patient> gefiltertePatienten = new ArrayList<>();
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+
+        for (Patient patient : allePatienten) {
+            if (matchesPatientWithRegex(patient, pattern)) {
+                gefiltertePatienten.add(patient);
+            }
+        }
+        return gefiltertePatienten;
+    }
+
+    private boolean matchesPatientWithRegex(Patient patient, Pattern pattern) {
+        return pattern.matcher(String.valueOf(patient.getpatientID())).find() ||
+                pattern.matcher(patient.getAnrede() != null ? patient.getAnrede() : "").find() ||
+                pattern.matcher(patient.getVorname() != null ? patient.getVorname() : "").find() ||
+                pattern.matcher(patient.getNachname() != null ? patient.getNachname() : "").find() ||
+                pattern.matcher(patient.getGeburtsdatum() != null ? patient.getGeburtsdatum().toString() : "").find() ||
+                pattern.matcher(String.valueOf(patient.getSozialversicherungsnummer())).find() ||
+                pattern.matcher(patient.getVersicherung() != null ? patient.getVersicherung() : "").find() ||
+                pattern.matcher(patient.getStrasse() != null ? patient.getStrasse() : "").find() ||
+                pattern.matcher(String.valueOf(patient.getPostleitzahl())).find() ||
+                pattern.matcher(patient.getOrt() != null ? patient.getOrt() : "").find() ||
+                pattern.matcher(patient.getTelefon() != null ? patient.getTelefon() : "").find() ||
+                pattern.matcher(patient.getMail() != null ? patient.getMail() : "").find() ||
+                pattern.matcher(patient.getBundesland() != null ? patient.getBundesland() : "").find();
     }
 
     //Methode zum Erstellen eines neuen Patienten

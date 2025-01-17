@@ -57,6 +57,7 @@ public class Main {
 
     public void showRezeptionMenu() {
         if (rezeptionMenuGUI == null) {
+            patientDAO = new PatientDAO(connection);
             rezeptionMenuGUI = new RezeptionMenu(connection, patientDAO);
         }
         rezeptionMenuGUI.setVisible(true);

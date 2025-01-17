@@ -26,6 +26,7 @@ public class RezeptionMenu extends JFrame {
         private JButton druckenButton;
         private JButton allButton;
         private JLabel date;
+        private JTextField suchenField;
 
         private Connection connection;
         private PatientDAO patientDAO;
