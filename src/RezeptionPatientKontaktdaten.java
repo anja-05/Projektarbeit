@@ -1,8 +1,5 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class RezeptionPatientKontaktdaten extends JFrame {
     private JPanel contentPane;

@@ -1,9 +1,12 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
+import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.sql.Date;
 import java.util.Locale;
+
+import static java.sql.Date.valueOf;
 
 public class RezeptionPatientErstellen extends JFrame {
     private JPanel contentPane;
@@ -34,7 +37,7 @@ public class RezeptionPatientErstellen extends JFrame {
 
     private void initializeProperties() {
         setTitle("Persönliche Daten");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(400, 300);
         setLocationRelativeTo(null);
     }
@@ -49,7 +52,7 @@ public class RezeptionPatientErstellen extends JFrame {
 
     private void returnToRezeptionMenu() {
         this.dispose();
-        RezeptionMenu rezeptionMenu = new RezeptionMenu(connection);
+        RezeptionMenu rezeptionMenu = new RezeptionMenu(connection, patientDAO);
         rezeptionMenu.setVisible(true);
     }
 

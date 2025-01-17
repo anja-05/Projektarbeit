@@ -27,10 +27,12 @@ public class RezeptionMenu extends JFrame {
         private JButton allButton;
         private JLabel date;
 
-        private static Connection connection;
+        private Connection connection;
+        private PatientDAO patientDAO;
 
-        public RezeptionMenu(Connection connection) {
+        public RezeptionMenu(Connection connection, PatientDAO patientDAO) {
             this.connection = connection;
+            this.patientDAO = patientDAO;
             initializePropertiesMenu();
             initializeMenu();
             initializeButtonListeners();
@@ -146,7 +148,11 @@ public class RezeptionMenu extends JFrame {
             ImageIcon scaledIcon6 = new ImageIcon(scaledImage6);
             allButton.setIcon(scaledIcon6);
             allButton.setToolTipText("Alle Patienten");
-            allButton.addActionListener(e -> allePatienten());
+            allButton.addActionListener(e -> {
+                PatientDAO patientDAO = new PatientDAO(connection);
+                AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
+                fenster.setVisible(true);
+            });
             toolBar.add(allButton);
 
             JLabel dateLabel = new JLabel();
@@ -177,7 +183,11 @@ public class RezeptionMenu extends JFrame {
             editItem.addActionListener(e -> patientBearbeiten());
             deleteItem.addActionListener(e -> deletePatientData());
             createItem.addActionListener(e -> createNewPatient());
-            allItem.addActionListener(e -> allePatienten());
+            allItem.addActionListener(e -> {
+                PatientDAO patientDAO = new PatientDAO(connection);
+                AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
+                fenster.setVisible(true);
+            });
             helpItem.addActionListener(e-> {
                 JOptionPane.showMessageDialog(this,
                         "Bei Problemen kontaktieren Sie uns:\nTelefon: +49 123 456 789\nWebsite: https://www.support-website.com",
@@ -197,9 +207,5 @@ public class RezeptionMenu extends JFrame {
         PatientDAO patientDAO = new PatientDAO(connection);
         RezeptionPatientErstellen patientErstellen = new RezeptionPatientErstellen(connection, patientDAO);
         patientErstellen.setVisible(true);
-    }
-
-    private void allePatienten() {
-
     }
 }

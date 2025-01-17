@@ -2,6 +2,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PatientDAO {
     private final Connection connection;
@@ -72,6 +74,39 @@ public class PatientDAO {
         } catch (SQLException e) {
             e.printStackTrace();
             return false; // Fehler beim Speichern
+        }
+    }
+
+    public List<Patient> getAllePatienten() throws SQLException {
+        String query =
+                "SELECT p.patientenID, p.anrede, p.vorname, p.nachname, p.geburtsdatum, p.sozialversicherungsnummer, " +
+                "k.bezeichnung AS versicherung, p.strasse, p.postleitzahl, p.ort, p.telefon, p.mail, b.bezeichnung AS bundesland " +
+                "FROM patient p " +
+                "LEFT JOIN krankenkasse k ON p.krankenkassenID = k.krankenkassenID " +
+                "LEFT JOIN bundesland b ON p.bundeslandID = b.bundeslandID";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            List<Patient> patientenListe = new ArrayList<>();
+            while (resultSet.next()) {
+                Patient patient = new Patient();
+                patient.setPatientID(resultSet.getInt("patientenID"));
+                patient.setAnrede(resultSet.getString("anrede"));
+                patient.setVorname(resultSet.getString("vorname"));
+                patient.setNachname(resultSet.getString("nachname"));
+                patient.setGeburtsdatum(resultSet.getDate("geburtsdatum"));
+                patient.setSozialversicherungsnummer(resultSet.getInt("sozialversicherungsnummer"));
+                patient.setVersicherung(resultSet.getString("versicherung"));
+                patient.setStrasse(resultSet.getString("strasse"));
+                patient.setPostleitzahl(resultSet.getInt("postleitzahl"));
+                patient.setOrt(resultSet.getString("ort"));
+                patient.setTelefon(resultSet.getString("telefon"));
+                patient.setMail(resultSet.getString("mail"));
+                patient.setBundesland(resultSet.getString("bundesland"));
+
+                patientenListe.add(patient);
+            }
+            return patientenListe;
         }
     }
 
