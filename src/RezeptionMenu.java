@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class RezeptionMenu extends JFrame {
         private JPanel contentPane;
@@ -137,7 +140,7 @@ public class RezeptionMenu extends JFrame {
             ImageIcon scaledIcon4 = new ImageIcon(scaledImage4);
             deleteButton.setIcon(scaledIcon4);
             deleteButton.setToolTipText("Patient löschen");
-            deleteButton.addActionListener(e -> deletePatientData());
+            deleteButton.addActionListener(e -> patientLöschen());
             toolBar.add(deleteButton);
 
             toolBar.addSeparator();
@@ -182,7 +185,7 @@ public class RezeptionMenu extends JFrame {
         private void initializeButtonListeners() {
             exitItem.addActionListener(e -> System.exit(0));
             editItem.addActionListener(e -> patientBearbeiten());
-            deleteItem.addActionListener(e -> deletePatientData());
+            deleteItem.addActionListener(e -> patientLöschen());
             createItem.addActionListener(e -> createNewPatient());
             allItem.addActionListener(e -> {
                 PatientDAO patientDAO = new PatientDAO(connection);
@@ -198,9 +201,72 @@ public class RezeptionMenu extends JFrame {
         }
 
     private void patientBearbeiten() {
+
     }
 
-    private void deletePatientData() {
+    private void patientLöschen() {
+        String patientenID = JOptionPane.showInputDialog(this,"Geben Sie die Patienten ID ein:");
+        if(patientenID == null || patientenID.isEmpty()) return;
+
+        try{
+            String query = """
+                SELECT patient.PatientenID, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
+                       patient.Sozialversicherungsnummer, patient.Strasse, patient.Postleitzahl,
+                       patient.Ort, patient.Telefon, patient.Mail, krankenkasse.Bezeichnung AS Krankenkasse
+                FROM patient
+                JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
+                WHERE patient.PatientenID = ?;
+                """;
+            try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
+                preparedStatement.setInt(1, Integer.parseInt(patientenID));
+                ResultSet set = preparedStatement.executeQuery();
+
+                if(set.next()){
+                    String patientDaten = String.format("""
+                        Vorname: %s
+                        Nachname: %s
+                        Geburtsdatum: %s
+                        Sozialversicherungsnummer: %s
+                        Straße: %s
+                        Postleitzahl: %s
+                        Ort: %s
+                        Telefon: %s
+                        Mail: %s
+                        Krankenkasse: %s
+                        """,
+                            set.getString("Vorname"),
+                            set.getString("Nachname"),
+                            set.getString("Geburtsdatum"),
+                            set.getString("Sozialversicherungsnummer"),
+                            set.getString("Strasse"),
+                            set.getString("Postleitzahl"),
+                            set.getString("Ort"),
+                            set.getString("Telefon"),
+                            set.getString("Mail"),
+                            set.getString("Krankenkasse")
+                    );
+                    int confirm = JOptionPane.showConfirmDialog(this, "Möchten Sie den Patienten wirklich löschen?\n\n" + patientDaten, "Bestätigung", JOptionPane.YES_NO_OPTION);
+
+                    if(confirm == JOptionPane.YES_OPTION){
+                        String deleteSQL = "DELETE FROM patient WHERE PatientenID = ?";
+                        try(PreparedStatement delete = connection.prepareStatement(deleteSQL)){
+                            delete.setInt(1, Integer.parseInt(patientenID));
+                            delete.executeUpdate();
+                            JOptionPane.showMessageDialog(this, "Patientdaten wurde gelöscht.");
+                        }
+                    }
+                }
+                else{
+                    JOptionPane.showMessageDialog(this, "Fehler: Der Patient mit der Id " + patientenID + " existiert nicht.");
+                }
+            }catch(SQLException ex){
+                JOptionPane.showMessageDialog(this, "Fehler:" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException e) {
+            throw new RuntimeException(e);
+        } catch (HeadlessException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
