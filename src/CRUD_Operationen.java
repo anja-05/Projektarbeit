@@ -64,7 +64,7 @@ public class CRUD_Operationen {
     }
 
     public void patientSpeichern(Patient patient) {
-        if (patient.getpatientID() == 0) {
+        if (patient.getPatientID() == 0) {
             neuenPatientenAnlegen(patient);
         } else {
             aktualisierePatient(patient);

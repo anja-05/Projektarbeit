@@ -48,6 +48,7 @@ public class ArztMenu extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    //Menu
     public void initializeMenu(){
         MenuBar= new JMenuBar();
 
@@ -62,16 +63,11 @@ public class ArztMenu extends JFrame {
 
         optionMenu = new JMenu("Optionen");
         editItem = new JMenuItem("Patient bearbeiten");
-        deleteItem = new JMenuItem("Patient löschen");
-        createItem = new JMenuItem("Patient erstellen");
         optionMenu.add(editItem);
         editItem.setMnemonic(KeyEvent.VK_E);
-        optionMenu.add(deleteItem);
-        deleteItem.setMnemonic(KeyEvent.VK_D);
-        optionMenu.add(createItem);
-        createItem.setMnemonic(KeyEvent.VK_C);
         MenuBar.add(optionMenu);
 
+        //Help
         helpMenu = new JMenu("Help");
         helpItem = new JMenuItem("Contact Support");
         helpMenu.add(helpItem);
@@ -80,6 +76,7 @@ public class ArztMenu extends JFrame {
         setJMenuBar(MenuBar);
     }
 
+    //Toolbar
     private void initializeToolBar(){
         toolBar = new JToolBar();
         toolBar.setFloatable(false);
@@ -110,16 +107,6 @@ public class ArztMenu extends JFrame {
 
         toolBar.addSeparator();
 
-        createButton = new JButton();
-        ImageIcon imageIcon2 = new ImageIcon("Icons/receptionist_17626336.png");
-        Image image2 = imageIcon2.getImage();
-        Image scaledImage2 = image2.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon2 = new ImageIcon(scaledImage2);
-        createButton.setIcon(scaledIcon2);
-        createButton.setToolTipText("Neuen Patienten erstellen");
-        createButton.addActionListener(e -> createNewPatient());
-        toolBar.add(createButton);
-
         editButton = new JButton();
         ImageIcon imageIcon3 = new ImageIcon("Icons/pencil_5465509.png");
         Image image3 = imageIcon3.getImage();
@@ -129,16 +116,6 @@ public class ArztMenu extends JFrame {
         editButton.setToolTipText("Patient bearbeiten");
         editButton.addActionListener(e -> patientBearbeiten());
         toolBar.add(editButton);
-
-        deleteButton = new JButton();
-        ImageIcon imageIcon4 = new ImageIcon("Icons/trash-bin_9545759.png");
-        Image image4 = imageIcon4.getImage();
-        Image scaledImage4 = image4.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon4 = new ImageIcon(scaledImage4);
-        deleteButton.setIcon(scaledIcon4);
-        deleteButton.setToolTipText("Patient löschen");
-        deleteButton.addActionListener(e -> deletePatientData());
-        toolBar.add(deleteButton);
 
         toolBar.addSeparator();
 
@@ -192,8 +169,6 @@ public class ArztMenu extends JFrame {
     private void initializeButtonListeners() {
         exitItem.addActionListener(e -> System.exit(0));
         editItem.addActionListener(e -> patientBearbeiten());
-        deleteItem.addActionListener(e -> deletePatientData());
-        createItem.addActionListener(e -> createNewPatient());
         allItem.addActionListener(e ->{
                     PatientDAO patientDAO = new PatientDAO(connection);
                     AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
@@ -209,100 +184,12 @@ public class ArztMenu extends JFrame {
 
     private void patientBearbeiten(){
         SwingUtilities.invokeLater(() -> {
-            PatientenBearbeiten patientBearbeiten = new PatientenBearbeiten(connection);
-            patientBearbeiten.setVisible(true);
+            ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten();
+            arztPatientBearbeiten.setVisible(true);
         });
     }
 
-    private void createNewPatient() {
-        JPanel panel = new JPanel(new GridLayout(11,1,5,5));
 
-        panel.add(new JLabel("Vorname:"));
-        JTextField vornameField = new JTextField();
-        panel.add(vornameField);
-
-        panel.add(new JLabel("Nachname:"));
-        JTextField nachnameField = new JTextField();
-        panel.add(nachnameField);
-
-        panel.add(new JLabel("Geburtsdatum:"));
-        JTextField geburtsdatumField = new JTextField();
-        panel.add(geburtsdatumField);
-
-        panel.add(new JLabel("Sozialversicherungsnummer:"));
-        JTextField sozialversicherungsnummerField = new JTextField();
-        panel.add(sozialversicherungsnummerField);
-
-        panel.add(new JLabel("Straße:"));
-        JTextField strasseField = new JTextField();
-        panel.add(strasseField);
-
-        panel.add(new JLabel("Postleitzahl:"));
-        JTextField postleitzahlField = new JTextField();
-        panel.add(postleitzahlField);
-
-        panel.add(new JLabel("Ort:"));
-        JTextField ortField = new JTextField();
-        panel.add(ortField);
-
-        panel.add(new JLabel("Telefon:"));
-        JTextField telefonField = new JTextField();
-        panel.add(telefonField);
-
-        panel.add(new JLabel("Mail:"));
-        JTextField mailField = new JTextField();
-        panel.add(mailField);
-
-        panel.add(new JLabel("Krankenkasse:"));
-        JComboBox<String> krankenkassaCheckBox = new JComboBox<>(new String []{"ÖGK", "SVS", "BVAEB"});
-        panel.add(krankenkassaCheckBox);
-
-        JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> {
-            try{
-                String vorname = vornameField.getText();
-                String nachname = nachnameField.getText();
-                String gebdatum = geburtsdatumField.getText();
-                String svNummer = sozialversicherungsnummerField.getText();
-                String strasse = strasseField.getText();
-                int postleitzahl = Integer.parseInt(postleitzahlField.getText());
-                String ort = ortField.getText();
-                String telefon = telefonField.getText();
-                String mail = mailField.getText();
-                String krankenkasse = (String) krankenkassaCheckBox.getSelectedItem();
-
-                int krankenkassenID = getKrankenkassaID(krankenkasse);
-
-                String daten = "INSERT INTO patient (vorname, nachname, geburtsdatum, sozialversicherungsnummer, strasse, postleitzahl, ort, telefon, mail, krankenkassenID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
-                try (PreparedStatement statement = connection.prepareStatement(daten, Statement.RETURN_GENERATED_KEYS)) {
-                    statement.setString(1, vornameField.getText());
-                    statement.setString(2, nachnameField.getText());
-                    statement.setString(3, geburtsdatumField.getText());
-                    statement.setString(4, sozialversicherungsnummerField.getText());
-                    statement.setString(5, strasseField.getText());
-                    statement.setInt(6, Integer.parseInt(postleitzahlField.getText()));
-                    statement.setString(7, ortField.getText());
-                    statement.setString(8, telefonField.getText());
-                    statement.setString(9, mailField.getText());
-                    statement.setInt(10, krankenkassenID);
-                    statement.executeUpdate();
-
-                    ResultSet rs = statement.getGeneratedKeys();
-                    if (rs.next()) {
-                        int patientenID = rs.getInt(1);
-                        JOptionPane.showMessageDialog(this, "Neuer Patient mit der ID " + patientenID + " wurde erstellt.");
-                    }
-                }
-                resetToDefaultView();
-            }catch (SQLException sql){
-                JOptionPane.showMessageDialog(this, "Fehler:" + sql.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-            }catch(NumberFormatException ex){
-                JOptionPane.showMessageDialog(this, "Fehler: Ungültige Eingabe","Fehler", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        panel.add(saveButton);
-        updateContentPane(panel);
-    }
 /*
     public void editPatientData(){
         String patientenID = JOptionPane.showInputDialog(this, "Geben Sie die Patienten ID ein:");
@@ -398,70 +285,6 @@ public class ArztMenu extends JFrame {
         }
     }
 */
-    private void deletePatientData(){
-        String patientenID = JOptionPane.showInputDialog(this,"Geben Sie die Patienten ID ein:");
-        if(patientenID == null || patientenID.isEmpty()) return;
-
-        try{
-            String query = """
-                SELECT patient.PatientenID, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
-                       patient.Sozialversicherungsnummer, patient.Strasse, patient.Postleitzahl,
-                       patient.Ort, patient.Telefon, patient.Mail, krankenkasse.Bezeichnung AS Krankenkasse
-                FROM patient
-                JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
-                WHERE patient.PatientenID = ?;
-                """;
-            try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
-                preparedStatement.setInt(1, Integer.parseInt(patientenID));
-                ResultSet set = preparedStatement.executeQuery();
-
-                if(set.next()){
-                    String patientDaten = String.format("""
-                        Vorname: %s
-                        Nachname: %s
-                        Geburtsdatum: %s
-                        Sozialversicherungsnummer: %s
-                        Straße: %s
-                        Postleitzahl: %s
-                        Ort: %s
-                        Telefon: %s
-                        Mail: %s
-                        Krankenkasse: %s
-                        """,
-                            set.getString("Vorname"),
-                            set.getString("Nachname"),
-                            set.getString("Geburtsdatum"),
-                            set.getString("Sozialversicherungsnummer"),
-                            set.getString("Strasse"),
-                            set.getString("Postleitzahl"),
-                            set.getString("Ort"),
-                            set.getString("Telefon"),
-                            set.getString("Mail"),
-                            set.getString("Krankenkasse")
-                    );
-                    int confirm = JOptionPane.showConfirmDialog(this, "Möchten Sie den Patienten wirklich löschen?\n\n" + patientDaten, "Bestätigung", JOptionPane.YES_NO_OPTION);
-
-                    if(confirm == JOptionPane.YES_OPTION){
-                        String deleteSQL = "DELETE FROM patient WHERE PatientenID = ?";
-                        try(PreparedStatement delete = connection.prepareStatement(deleteSQL)){
-                            delete.setInt(1, Integer.parseInt(patientenID));
-                            delete.executeUpdate();
-                            JOptionPane.showMessageDialog(this, "Patientdaten wurde gelöscht.");
-                        }
-                    }
-                }
-                else{
-                    JOptionPane.showMessageDialog(this, "Fehler: Der Patient mit der Id " + patientenID + " existiert nicht.");
-                }
-            }catch(SQLException ex){
-                JOptionPane.showMessageDialog(this, "Fehler:" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (NumberFormatException e) {
-            throw new RuntimeException(e);
-        } catch (HeadlessException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private void suchePatient(){
 

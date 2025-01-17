@@ -64,7 +64,7 @@ public class PatientDAO {
                 try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         patient.setPatientID(generatedKeys.getInt(1)); // Setze die generierte ID im Patient-Objekt
-                        System.out.println("Patient erfolgreich gespeichert mit ID: " + patient.getpatientID());
+                        System.out.println("Patient erfolgreich gespeichert mit ID: " + patient.getPatientID());
                     } else {
                         throw new SQLException("Fehler beim Abrufen der generierten ID.");
                     }
@@ -125,7 +125,7 @@ public class PatientDAO {
     }
 
     private boolean matchesPatientWithRegex(Patient patient, Pattern pattern) {
-        return pattern.matcher(String.valueOf(patient.getpatientID())).find() ||
+        return pattern.matcher(String.valueOf(patient.getPatientID())).find() ||
                 pattern.matcher(patient.getAnrede() != null ? patient.getAnrede() : "").find() ||
                 pattern.matcher(patient.getVorname() != null ? patient.getVorname() : "").find() ||
                 pattern.matcher(patient.getNachname() != null ? patient.getNachname() : "").find() ||

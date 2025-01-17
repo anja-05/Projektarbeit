@@ -46,7 +46,7 @@ public class Patient {
                 '}';
     }*/
 
-    public int getpatientID() {
+    public int getPatientID() {
         return patientID;
     }
     public void setPatientID(int patientID) {

@@ -102,7 +102,7 @@ public class AllePatientenAnzeigen extends JFrame {
 
         for (int i = 0; i < patientenListe.size(); i++) {
             Patient patient = patientenListe.get(i);
-            daten[i][0] = patient.getpatientID();
+            daten[i][0] = patient.getPatientID();
             daten[i][1] = patient.getAnrede();
             daten[i][2] = patient.getVorname();
             daten[i][3] = patient.getNachname();
