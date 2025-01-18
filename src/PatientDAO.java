@@ -140,6 +140,122 @@ public class PatientDAO {
                 pattern.matcher(patient.getBundesland() != null ? patient.getBundesland() : "").find();
     }
 
+    public String getPatientDetails(int patientenID) throws SQLException {
+        String query = """
+            SELECT patient.PatientenID, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
+                   patient.Sozialversicherungsnummer, patient.Strasse, patient.Postleitzahl,
+                   patient.Ort, patient.Telefon, patient.Mail, krankenkasse.Bezeichnung AS Krankenkasse
+            FROM patient
+            JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
+            WHERE patient.PatientenID = ?;
+        """;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, patientenID);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                return String.format("""
+                    Vorname: %s
+                    Nachname: %s
+                    Geburtsdatum: %s
+                    Sozialversicherungsnummer: %s
+                    Straße: %s
+                    Postleitzahl: %s
+                    Ort: %s
+                    Telefon: %s
+                    Mail: %s
+                    Krankenkasse: %s
+                    """,
+                        resultSet.getString("Vorname"),
+                        resultSet.getString("Nachname"),
+                        resultSet.getString("Geburtsdatum"),
+                        resultSet.getString("Sozialversicherungsnummer"),
+                        resultSet.getString("Strasse"),
+                        resultSet.getString("Postleitzahl"),
+                        resultSet.getString("Ort"),
+                        resultSet.getString("Telefon"),
+                        resultSet.getString("Mail"),
+                        resultSet.getString("Krankenkasse")
+                );
+            }
+        }
+        return null;
+    }
+
+    public boolean deletePatient(int patientenID) throws SQLException {
+        String deleteSQL = "DELETE FROM patient WHERE PatientenID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
+            preparedStatement.setInt(1, patientenID);
+            int affectedRows = preparedStatement.executeUpdate();
+            return affectedRows > 0; // Gibt true zurück, wenn ein Datensatz gelöscht wurde
+        }
+    }
+
+    public Patient getPatientById(int patientId) {
+        String query = """
+    SELECT p.patientenID, p.anrede, p.vorname, p.nachname, p.geburtsdatum, p.sozialversicherungsnummer, 
+           k.bezeichnung AS versicherung, p.strasse, p.postleitzahl, p.ort, p.telefon, p.mail, 
+           b.bezeichnung AS bundesland
+    FROM patient p
+    LEFT JOIN krankenkasse k ON p.krankenkassenID = k.krankenkassenID
+    LEFT JOIN bundesland b ON p.bundeslandID = b.bundeslandID
+    WHERE p.patientenID = ?
+""";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, patientId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                Patient patient = new Patient();
+                patient.setPatientID(resultSet.getInt("PatientenID"));
+                patient.setAnrede(resultSet.getString("Anrede"));
+                patient.setVorname(resultSet.getString("Vorname"));
+                patient.setNachname(resultSet.getString("Nachname"));
+                patient.setGeburtsdatum(resultSet.getDate("Geburtsdatum"));
+                patient.setSozialversicherungsnummer(resultSet.getInt("Sozialversicherungsnummer"));
+                patient.setVersicherung(resultSet.getString("Versicherung"));
+                patient.setTelefon(resultSet.getString("Telefon"));
+                patient.setMail(resultSet.getString("Mail"));
+                patient.setStrasse(resultSet.getString("Strasse"));
+                patient.setPostleitzahl(resultSet.getInt("Postleitzahl"));
+                patient.setOrt(resultSet.getString("Ort"));
+                patient.setBundesland(resultSet.getString("Bundesland"));
+                return patient;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Wenn kein Patient gefunden wurde
+    }
+
+    public boolean updatePatient(Patient patient) {
+        String query = """
+        UPDATE patient 
+        SET Anrede = ?, Vorname = ?, Nachname = ?, Geburtsdatum = ?, Sozialversicherungsnummer = ?, krankenkassenID = ?, 
+            Telefon = ?, Mail = ?, Strasse = ?, Postleitzahl = ?, Ort = ?, bundeslandID = ?
+        WHERE PatientenID = ?
+    """;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, patient.getAnrede());
+            preparedStatement.setString(2, patient.getVorname());
+            preparedStatement.setString(3, patient.getNachname());
+            preparedStatement.setDate(4, patient.getGeburtsdatum());
+            preparedStatement.setInt(5, patient.getSozialversicherungsnummer());
+            preparedStatement.setInt(6, getKrankenkassenID(patient.getVersicherung()));
+            preparedStatement.setString(7, patient.getTelefon());
+            preparedStatement.setString(8, patient.getMail());
+            preparedStatement.setString(9, patient.getStrasse());
+            preparedStatement.setInt(10, patient.getPostleitzahl());
+            preparedStatement.setString(11, patient.getOrt());
+            preparedStatement.setInt(12, getBundeslandID(patient.getBundesland()));
+            preparedStatement.setInt(13, patient.getPatientID());
+            return preparedStatement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+/*
     //Methode zum Erstellen eines neuen Patienten
     public void createPatient(Patient patient) throws SQLException {
         String query = "INSERT INTO patient (vorname, nachname, geburtsdatum, sozialversicherungsnummer, strasse, postleitzahl, ort, telefon, mail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -155,5 +271,5 @@ public class PatientDAO {
             stmt.setString(9, patient.getMail());
             stmt.executeUpdate();
         }
-    }
+    }*/
 }

@@ -25,11 +25,9 @@ public class RezeptionMenu extends JFrame {
         private JButton deleteButton;
         private JButton createButton;
         private JButton exitButton;
-        private JButton suchenButton;
         private JButton druckenButton;
         private JButton allButton;
         private JLabel date;
-        private JTextField suchenField;
 
         private Connection connection;
         private PatientDAO patientDAO;
@@ -101,18 +99,6 @@ public class RezeptionMenu extends JFrame {
 
             toolBar.addSeparator();
 
-            /*suchenButton = new JButton();
-            ImageIcon imageIcon1 = new ImageIcon("Icons/search_11349253.png");
-            Image image1 = imageIcon1.getImage();
-            Image scaledImage1 = image1.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-            ImageIcon scaledIcon1 = new ImageIcon(scaledImage1);
-            suchenButton.setIcon(scaledIcon1);
-            suchenButton.setToolTipText("Suchen");
-            suchenButton.addActionListener(e -> suchePatient());
-            toolBar.add(suchenButton);*/
-
-            toolBar.addSeparator();
-
             createButton = new JButton();
             ImageIcon imageIcon2 = new ImageIcon("Icons/receptionist_17626336.png");
             Image image2 = imageIcon2.getImage();
@@ -120,7 +106,11 @@ public class RezeptionMenu extends JFrame {
             ImageIcon scaledIcon2 = new ImageIcon(scaledImage2);
             createButton.setIcon(scaledIcon2);
             createButton.setToolTipText("Neuen Patienten erstellen");
-            createButton.addActionListener(e -> createNewPatient());
+            createButton.addActionListener(e -> {
+                PatientDAO patientDAO = new PatientDAO(connection);
+                RezeptionPatientErstellen patientErstellen = new RezeptionPatientErstellen(connection, patientDAO);
+                patientErstellen.setVisible(true);
+            });
             toolBar.add(createButton);
 
             editButton = new JButton();
@@ -130,7 +120,28 @@ public class RezeptionMenu extends JFrame {
             ImageIcon scaledIcon3 = new ImageIcon(scaledImage3);
             editButton.setIcon(scaledIcon3);
             editButton.setToolTipText("Patient bearbeiten");
-            editButton.addActionListener(e -> patientBearbeiten());
+            editButton.addActionListener(e -> {
+                String patientenIDString = JOptionPane.showInputDialog(this, "Geben Sie die Patienten-ID ein, die Sie bearbeiten möchten:");
+                if (patientenIDString == null || patientenIDString.isEmpty()) return;
+
+                try {
+                    int patientenID = Integer.parseInt(patientenIDString);
+                    Patient patient = patientDAO.getPatientById(patientenID); // Holen der Patientendaten aus der Datenbank
+                    if (patient == null) {
+                        JOptionPane.showMessageDialog(this, "Kein Patient mit der ID " + patientenID + " gefunden.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    RezeptionPatientBearbeiten bearbeitenFenster = new RezeptionPatientBearbeiten(connection, patientDAO);
+                    bearbeitenFenster.setFields(patient); // Felder mit Daten des Patienten füllen
+                    bearbeitenFenster.setVisible(true);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Ungültige Patienten-ID. Bitte geben Sie eine Zahl ein.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                }
+                /*PatientDAO patientDAO = new PatientDAO(connection);
+                RezeptionPatientBearbeiten patientBearbeiten = new RezeptionPatientBearbeiten(connection, patientDAO);
+                patientBearbeiten.setVisible(true);*/
+            });
             toolBar.add(editButton);
 
             deleteButton = new JButton();
@@ -184,9 +195,33 @@ public class RezeptionMenu extends JFrame {
 
         private void initializeButtonListeners() {
             exitItem.addActionListener(e -> System.exit(0));
-            editItem.addActionListener(e -> patientBearbeiten());
+            editItem.addActionListener(e -> {
+                String patientenIDString = JOptionPane.showInputDialog(this, "Geben Sie die Patienten-ID ein, die Sie bearbeiten möchten:");
+                if (patientenIDString == null || patientenIDString.isEmpty()) return;
+
+                try {
+                    int patientenID = Integer.parseInt(patientenIDString);
+                    Patient patient = patientDAO.getPatientById(patientenID); // Holen der Patientendaten aus der Datenbank
+                    if (patient == null) {
+                        JOptionPane.showMessageDialog(this, "Kein Patient mit der ID " + patientenID + " gefunden.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    RezeptionPatientBearbeiten bearbeitenFenster = new RezeptionPatientBearbeiten(connection, patientDAO);
+                    bearbeitenFenster.setFields(patient); // Felder mit Daten des Patienten füllen
+                    bearbeitenFenster.setVisible(true);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Ungültige Patienten-ID. Bitte geben Sie eine Zahl ein.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                }
+                /*PatientDAO patientDAO = new PatientDAO(connection);
+                RezeptionPatientBearbeiten patientBearbeiten = new RezeptionPatientBearbeiten(connection, patientDAO);
+                patientBearbeiten.setVisible(true);*/
+            });
             deleteItem.addActionListener(e -> patientLöschen());
-            createItem.addActionListener(e -> createNewPatient());
+            createItem.addActionListener(e -> {
+                PatientDAO patientDAO = new PatientDAO(connection);
+                RezeptionPatientErstellen patientErstellen = new RezeptionPatientErstellen(connection, patientDAO);
+                patientErstellen.setVisible(true);
+            });
             allItem.addActionListener(e -> {
                 PatientDAO patientDAO = new PatientDAO(connection);
                 AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
@@ -200,79 +235,37 @@ public class RezeptionMenu extends JFrame {
             });
         }
 
-    private void patientBearbeiten() {
-
-    }
-
     private void patientLöschen() {
-        String patientenID = JOptionPane.showInputDialog(this,"Geben Sie die Patienten ID ein:");
-        if(patientenID == null || patientenID.isEmpty()) return;
+        String patientenIDString = JOptionPane.showInputDialog(this, "Geben Sie die Patienten ID ein:");
+        if (patientenIDString == null || patientenIDString.isEmpty()) return;
 
-        try{
-            String query = """
-                SELECT patient.PatientenID, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
-                       patient.Sozialversicherungsnummer, patient.Strasse, patient.Postleitzahl,
-                       patient.Ort, patient.Telefon, patient.Mail, krankenkasse.Bezeichnung AS Krankenkasse
-                FROM patient
-                JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
-                WHERE patient.PatientenID = ?;
-                """;
-            try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
-                preparedStatement.setInt(1, Integer.parseInt(patientenID));
-                ResultSet set = preparedStatement.executeQuery();
+        try {
+            int patientenID = Integer.parseInt(patientenIDString);
 
-                if(set.next()){
-                    String patientDaten = String.format("""
-                        Vorname: %s
-                        Nachname: %s
-                        Geburtsdatum: %s
-                        Sozialversicherungsnummer: %s
-                        Straße: %s
-                        Postleitzahl: %s
-                        Ort: %s
-                        Telefon: %s
-                        Mail: %s
-                        Krankenkasse: %s
-                        """,
-                            set.getString("Vorname"),
-                            set.getString("Nachname"),
-                            set.getString("Geburtsdatum"),
-                            set.getString("Sozialversicherungsnummer"),
-                            set.getString("Strasse"),
-                            set.getString("Postleitzahl"),
-                            set.getString("Ort"),
-                            set.getString("Telefon"),
-                            set.getString("Mail"),
-                            set.getString("Krankenkasse")
-                    );
-                    int confirm = JOptionPane.showConfirmDialog(this, "Möchten Sie den Patienten wirklich löschen?\n\n" + patientDaten, "Bestätigung", JOptionPane.YES_NO_OPTION);
+            String patientDaten = patientDAO.getPatientDetails(patientenID);
+            if (patientDaten == null) {
+                JOptionPane.showMessageDialog(this, "Der Patient mit der ID " + patientenID + " existiert nicht.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-                    if(confirm == JOptionPane.YES_OPTION){
-                        String deleteSQL = "DELETE FROM patient WHERE PatientenID = ?";
-                        try(PreparedStatement delete = connection.prepareStatement(deleteSQL)){
-                            delete.setInt(1, Integer.parseInt(patientenID));
-                            delete.executeUpdate();
-                            JOptionPane.showMessageDialog(this, "Patientdaten wurde gelöscht.");
-                        }
-                    }
+            int confirm = JOptionPane.showConfirmDialog(this, "Möchten Sie den Patienten wirklich löschen?\n\n" + patientDaten, "Bestätigung", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (patientDAO.deletePatient(patientenID)) {
+                    JOptionPane.showMessageDialog(this, "Patient wurde erfolgreich gelöscht.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Fehler beim Löschen des Patienten.", "Fehler", JOptionPane.ERROR_MESSAGE);
                 }
-                else{
-                    JOptionPane.showMessageDialog(this, "Fehler: Der Patient mit der Id " + patientenID + " existiert nicht.");
-                }
-            }catch(SQLException ex){
-                JOptionPane.showMessageDialog(this, "Fehler:" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
             }
         } catch (NumberFormatException e) {
-            throw new RuntimeException(e);
-        } catch (HeadlessException e) {
-            throw new RuntimeException(e);
+            JOptionPane.showMessageDialog(this, "Ungültige Patienten-ID. Bitte geben Sie eine Zahl ein.", "Fehler", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler beim Löschen des Patienten: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
         }
-
     }
-
+/*
     private void createNewPatient() {
         PatientDAO patientDAO = new PatientDAO(connection);
         RezeptionPatientErstellen patientErstellen = new RezeptionPatientErstellen(connection, patientDAO);
         patientErstellen.setVisible(true);
-    }
+    }*/
 }

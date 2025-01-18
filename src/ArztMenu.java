@@ -25,7 +25,6 @@ public class ArztMenu extends JFrame {
     private JButton deleteButton;
     private JButton createButton;
     private JButton exitButton;
-    private JButton suchenButton;
     private JButton druckenButton;
     private JButton allButton;
     private JLabel date;
@@ -95,18 +94,6 @@ public class ArztMenu extends JFrame {
 
         toolBar.addSeparator();
 
-        suchenButton = new JButton();
-        ImageIcon imageIcon1 = new ImageIcon("Icons/search_11349253.png");
-        Image image1 = imageIcon1.getImage();
-        Image scaledImage1 = image1.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon1 = new ImageIcon(scaledImage1);
-        suchenButton.setIcon(scaledIcon1);
-        suchenButton.setToolTipText("Suchen");
-        suchenButton.addActionListener(e -> suchePatient());
-        toolBar.add(suchenButton);
-
-        toolBar.addSeparator();
-
         editButton = new JButton();
         ImageIcon imageIcon3 = new ImageIcon("Icons/pencil_5465509.png");
         Image image3 = imageIcon3.getImage();
@@ -128,6 +115,8 @@ public class ArztMenu extends JFrame {
         druckenButton.setToolTipText("Drucken");
         druckenButton.addActionListener(e -> drucken());
         toolBar.add(druckenButton);
+
+        toolBar.addSeparator();
 
         allButton = new JButton();
         ImageIcon imageIcon6 = new ImageIcon("Icons/menu_7699137.png");
@@ -188,8 +177,6 @@ public class ArztMenu extends JFrame {
             arztPatientBearbeiten.setVisible(true);
         });
     }
-
-
 /*
     public void editPatientData(){
         String patientenID = JOptionPane.showInputDialog(this, "Geben Sie die Patienten ID ein:");
@@ -285,56 +272,7 @@ public class ArztMenu extends JFrame {
         }
     }
 */
-
-    private void suchePatient(){
-
-    }
-
     private void drucken(){
 
     }
-
-    private int getKrankenkassaID(String krankenkasse){
-        switch (krankenkasse){
-            case "ÖGK":
-                return 1;
-            case "SVS":
-                return 2;
-            case "BVAEB":
-                return 3;
-                default:
-                    throw new IllegalArgumentException("Ungültige Krankenkasse ausgewählt: " + krankenkasse);
-        }
-    }
-
-    private String getKrankenkassaName(int krankenkassenID) {
-        String krankenkasseName = "";
-        String query = "SELECT bezeichnung FROM krankenkasse WHERE krankenkassenID = ?";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, krankenkassenID);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                krankenkasseName = resultSet.getString("Bezeichnung");
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-
-        return krankenkasseName;
-    }
-
-    private void resetToDefaultView(){
-        contentPane.removeAll();
-        contentPane.revalidate();
-        contentPane.repaint();
-    }
-
-    private void updateContentPane(JPanel panel){
-        contentPane.removeAll();
-        contentPane.add(panel, BorderLayout.CENTER);
-        contentPane.revalidate();
-        contentPane.repaint();
-    }
-
 }

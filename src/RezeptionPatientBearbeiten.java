@@ -3,34 +3,30 @@ import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.sql.Date;
 import java.util.Locale;
 
-import static java.sql.Date.valueOf;
-
-public class RezeptionPatientErstellen extends JFrame {
+public class RezeptionPatientBearbeiten extends JFrame {
     private JPanel contentPane;
     private JComboBox AnredeComboBox;
-    private JTextField vornameTextField;
+    private JTextField VornameTextField;
     private JTextField nachnameTextField;
     private JTextField geburtsdatumTextField;
     private JTextField svnTextField;
-    private JComboBox versicherungComboBox;
-    private JButton weiterButton;
+    private JComboBox VersicherungComboBox;
     private JButton abbrechenButton;
+    private JButton weiterButton;
 
     private Connection connection;
     private PatientDAO patientDAO;
     private Patient patient;
 
-    public RezeptionPatientErstellen(Connection connection, PatientDAO patientDAO) {
+    public RezeptionPatientBearbeiten(Connection connection, PatientDAO patientDAO) {
         this.connection = connection;
         this.patientDAO = patientDAO;
         this.patient = new Patient();
         initializeProperties();
         initializeView();
         initializeButtonListeners();
-        resetFields();
     }
 
     private void initializeProperties() {
@@ -59,7 +55,7 @@ public class RezeptionPatientErstellen extends JFrame {
     private void actionPerformed(ActionEvent actionEvent) {
         if (validateFields()) {
             patient.setAnrede((String) AnredeComboBox.getSelectedItem());
-            patient.setVorname(vornameTextField.getText());
+            patient.setVorname(VornameTextField.getText());
             patient.setNachname(nachnameTextField.getText());
             try {
                 String geburtsdatumString = geburtsdatumTextField.getText();
@@ -75,20 +71,19 @@ public class RezeptionPatientErstellen extends JFrame {
                 JOptionPane.showMessageDialog(this, "Die Sozialversicherungsnummer muss eine Zahl sein.", "Fehler", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
+            patient.setVersicherung((String) VersicherungComboBox.getSelectedItem());
 
-            // Weiterleitung mit demselben Patient-Objekt
             dispose();
-            RezeptionPatientKontaktdaten kontaktFenster = new RezeptionPatientKontaktdaten(patient, patientDAO);
+            RezeptionPatientBearbeitenKontaktdaten kontaktFenster = new RezeptionPatientBearbeitenKontaktdaten(patient, patientDAO);
             kontaktFenster.setFields(patient);
             kontaktFenster.setVisible(true);
         }
     }
 
     private boolean validateFields() {
-        if (AnredeComboBox.getSelectedItem() == null || vornameTextField.getText().isEmpty()
+        if (AnredeComboBox.getSelectedItem() == null || VornameTextField.getText().isEmpty()
                 || nachnameTextField.getText().isEmpty() || geburtsdatumTextField.getText().isEmpty()
-                || svnTextField.getText().isEmpty() || versicherungComboBox.getSelectedItem() == null) {
+                || svnTextField.getText().isEmpty() || VersicherungComboBox.getSelectedItem() == null) {
             JOptionPane.showMessageDialog(this, "Bitte füllen Sie alle Pflichtfelder aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return false;
         }
@@ -100,7 +95,7 @@ public class RezeptionPatientErstellen extends JFrame {
 
         if (patient != null) {
             AnredeComboBox.setSelectedItem(patient.getAnrede());
-            vornameTextField.setText(patient.getVorname());
+            VornameTextField.setText(patient.getVorname());
             nachnameTextField.setText(patient.getNachname());
 
             java.sql.Date geburtsdatum = patient.getGeburtsdatum();
@@ -109,7 +104,7 @@ public class RezeptionPatientErstellen extends JFrame {
                 geburtsdatumTextField.setText(formatter.format(geburtsdatum)); // Formatieren und setzen
             }
             svnTextField.setText(String.valueOf(patient.getSozialversicherungsnummer()));
-            versicherungComboBox.setSelectedItem(patient.getVersicherung());
+            VersicherungComboBox.setSelectedItem(patient.getVersicherung());
         } else {
             resetFields();
         }
@@ -117,10 +112,11 @@ public class RezeptionPatientErstellen extends JFrame {
 
     private void resetFields() {
         AnredeComboBox.setSelectedItem(null);
-        vornameTextField.setText("");
+        VornameTextField.setText("");
         nachnameTextField.setText("");
         geburtsdatumTextField.setText("");
         svnTextField.setText("");
-        versicherungComboBox.setSelectedItem(null);
+        VersicherungComboBox.setSelectedItem(null);
     }
+
 }

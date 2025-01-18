@@ -1,12 +1,12 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class RezeptionPatientKontaktdaten extends JFrame {
+public class RezeptionPatientBearbeitenKontaktdaten extends JFrame {
     private JPanel contentPane;
-    private JTextField telTextField;
+    private JTextField telefonTextField;
     private JTextField mailTextField;
     private JTextField strasseTextField;
-    private JTextField pznTextField;
+    private JTextField postleitzahlTextField;
     private JTextField ortTextField;
     private JComboBox bundeslandComboBox;
     private JButton zurückButton;
@@ -15,30 +15,30 @@ public class RezeptionPatientKontaktdaten extends JFrame {
     private Patient patient;
     private PatientDAO patientDAO;
 
-    public RezeptionPatientKontaktdaten(Patient patient, PatientDAO patientDAO) {
-            this.patient = patient;
-            this.patientDAO = patientDAO;
-            initializeProperties();
-            initializeView();
-            initializeButtonListeners();
-        }
+    public RezeptionPatientBearbeitenKontaktdaten(Patient patient, PatientDAO patientDAO) {
+        this.patient = patient;
+        this.patientDAO = patientDAO;
+        initializeProperties();
+        initializeView();
+        initializeButtonListeners();
+    }
 
-        private void initializeProperties() {
-            setTitle("Kontaktdaten");
-            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setSize(400, 300);
-            setLocationRelativeTo(null);
-        }
-        private void initializeView() {
-            setContentPane(contentPane);
-            pack();
-        }
-        private void initializeButtonListeners() {
-            speichernButton.addActionListener(this::speichernPerformed);
-            zurückButton.addActionListener(e -> returnToRezeptionPatientErstellen());
-        }
+    private void initializeProperties() {
+        setTitle("Kontaktdaten");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 300);
+        setLocationRelativeTo(null);
+    }
+    private void initializeView() {
+        setContentPane(contentPane);
+        pack();
+    }
+    private void initializeButtonListeners() {
+        speichernButton.addActionListener(this::speichernPerformed);
+        zurückButton.addActionListener(e -> returnToRezeptionPatientBeareiten());
+    }
 
-    private void returnToRezeptionPatientErstellen() {
+    private void returnToRezeptionPatientBeareiten() {
         saveCurrentFieldsToPatient();
         dispose();
         RezeptionPatientErstellen patientErstellenFenster = new RezeptionPatientErstellen(patientDAO.getConnection(), patientDAO);
@@ -47,11 +47,11 @@ public class RezeptionPatientKontaktdaten extends JFrame {
     }
 
     public void saveCurrentFieldsToPatient() {
-        patient.setTelefon(telTextField.getText());
+        patient.setTelefon(telefonTextField.getText());
         patient.setMail(mailTextField.getText());
         patient.setStrasse(strasseTextField.getText());
         try {
-            patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
+            patient.setPostleitzahl(Integer.parseInt(postleitzahlTextField.getText()));
         } catch (NumberFormatException e) {
             patient.setPostleitzahl(0); // Standardwert bei ungültiger Eingabe
         }
@@ -63,25 +63,13 @@ public class RezeptionPatientKontaktdaten extends JFrame {
         this.patient = patient;
 
         if (patient != null) {
-            telTextField.setText(patient.getTelefon());
+            telefonTextField.setText(patient.getTelefon());
             mailTextField.setText(patient.getMail());
             strasseTextField.setText(patient.getStrasse());
-            pznTextField.setText(patient.getPostleitzahl() == 0 ? "" : String.valueOf(patient.getPostleitzahl())); // Leeres Feld für 0
+            postleitzahlTextField.setText(patient.getPostleitzahl() == 0 ? "" : String.valueOf(patient.getPostleitzahl())); // Leeres Feld für 0
             ortTextField.setText(patient.getOrt());
             bundeslandComboBox.setSelectedItem(patient.getBundesland());
         }
-        else {
-            resetFields();
-        }
-    }
-
-    private void resetFields() {
-        telTextField.setText("");
-        mailTextField.setText("");
-        strasseTextField.setText("");
-        pznTextField.setText("");
-        ortTextField.setText("");
-        bundeslandComboBox.setSelectedItem(null);
     }
 
     private void speichernPerformed(ActionEvent actionEvent) {
@@ -90,11 +78,11 @@ public class RezeptionPatientKontaktdaten extends JFrame {
             JOptionPane.showMessageDialog(this, "Bitte wählen Sie ein Bundesland aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        patient.setTelefon(telTextField.getText());
+        patient.setTelefon(telefonTextField.getText());
         patient.setMail(mailTextField.getText());
         patient.setStrasse(strasseTextField.getText());
         try {
-            patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
+            patient.setPostleitzahl(Integer.parseInt(postleitzahlTextField.getText()));
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Die Postleitzahl muss eine Zahl sein.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return;
@@ -102,9 +90,10 @@ public class RezeptionPatientKontaktdaten extends JFrame {
         patient.setOrt(ortTextField.getText());
         patient.setBundesland((String) bundeslandComboBox.getSelectedItem());
 
-        boolean success = patientDAO.savePatient(patient);
+        saveCurrentFieldsToPatient();
+        boolean success = patientDAO.updatePatient(patient);
         if (success) {
-            JOptionPane.showMessageDialog(this, "Patient erfolgreich gespeichert.");
+            JOptionPane.showMessageDialog(this, "Daten erfolgreich gespeichert.");
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Fehler beim Speichern des Patienten.", "Fehler", JOptionPane.ERROR_MESSAGE);
