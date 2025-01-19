@@ -3,6 +3,10 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
 
+/**
+ * Zeigt alle Patienten aus der Datenbank an
+ * Suchfunktion mit Regex und Möglichkeit danach nochmals alle Patienten laden zu können
+ */
 public class AllePatientenAnzeigen extends JFrame {
     private JPanel contentPane;
     private JTable patientenTable;
@@ -13,6 +17,10 @@ public class AllePatientenAnzeigen extends JFrame {
 
     private PatientDAO patientDAO;
 
+    /**
+     * Kondtruktor für die GUI zur Anzeige aller Patienten
+     * @param patientDAO DAO-Objekt für den Zugriff auf Patientendaten in der Datenbank
+     */
     public AllePatientenAnzeigen(PatientDAO patientDAO) {
         this.patientDAO = patientDAO;
         initializeProperties();
@@ -23,11 +31,13 @@ public class AllePatientenAnzeigen extends JFrame {
             List<Patient> patientenListe = patientDAO.getAllePatienten();
             aktualisiereTabelle(patientenListe);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Patienten: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-            return;
+            showErrorDialog("Fehler beim Abrufen der Patienten: " + e.getMessage());
         }
     }
 
+    /**
+     * Initialisiert alle Eigenschaften des Fensters (Größe, Titel, Schließverhalten, Position)
+     */
     private void initializeProperties() {
         setTitle("Alle Patienten");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -35,6 +45,9 @@ public class AllePatientenAnzeigen extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    /**
+     * Initialisiert grafische Benutzeroberfläche
+     */
     private void initializeView() {
         contentPane = new JPanel(new BorderLayout());
         setContentPane(contentPane);
@@ -62,6 +75,9 @@ public class AllePatientenAnzeigen extends JFrame {
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Initialisiert Action Listeners für die Buttons (zurückButton, suchenButton, allePatientenButton)
+     */
     private void initializeButtonListeners() {
         zurückButton.addActionListener(e -> {
             dispose();
@@ -74,28 +90,37 @@ public class AllePatientenAnzeigen extends JFrame {
                     List<Patient> gefiltertePatienten = patientDAO.suchePatientenMitRegex(regex);
                     aktualisiereTabelle(gefiltertePatienten);
                 } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Fehler bei der Suche: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+                    showErrorDialog("Fehler bei der Suche: " + ex.getMessage());
+                } catch (Exception ex) {
+                showErrorDialog("Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage());
                 }
             } else {
                 try {
                     // Zeigt alle Patienten an, wenn das Suchfeld leer ist
                     aktualisiereTabelle(patientDAO.getAllePatienten());
                 } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Patienten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+                    showErrorDialog("Fehler beim Abrufen der Patienten: " + ex.getMessage());
+                } catch (Exception ex) {
+                    showErrorDialog("Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage());
                 }
             }
         });
-
         allePatientenButton.addActionListener(e -> {
             try {
                 List<Patient> allePatienten = patientDAO.getAllePatienten();
                 aktualisiereTabelle(allePatienten);
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Patienten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+                showErrorDialog("Fehler beim Abrufen der Patienten: " + ex.getMessage());
+            } catch (Exception ex) {
+                showErrorDialog("Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage());
             }
         });
     }
 
+    /**
+     * Aktualisiert die Tabelle mit den übergebenen Patientendaten
+     * @param patientenListe Eine Liste von Patienten, die in der Tabelle angezeigt werden sollen
+     */
     private void aktualisiereTabelle(List<Patient> patientenListe) {
         String[] spalten = {"PatientenID", "Anrede", "Vorname", "Nachname", "Geburtsdatum", "Sozialversicherungsnummer", "Versicherung", "Strasse", "Postleitzahl", "Ort", "Telefon", "Mail", "Bundesland"};
         Object[][] daten = new Object[patientenListe.size()][spalten.length];
@@ -117,5 +142,13 @@ public class AllePatientenAnzeigen extends JFrame {
             daten[i][12] = patient.getBundesland();
         }
         patientenTable.setModel(new javax.swing.table.DefaultTableModel(daten, spalten));
+    }
+
+    /**
+     * Zeigt eine Fehlermeldung in einem Diolog an
+     * @param message die jeweilige Fehlermeldung die angezeigt werden soll
+     */
+    private void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE);
     }
 }

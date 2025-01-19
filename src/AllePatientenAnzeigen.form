@@ -17,12 +17,6 @@
           <text value="Zurück"/>
         </properties>
       </component>
-      <scrollpane id="190b0">
-        <constraints border-constraint="East"/>
-        <properties/>
-        <border type="none"/>
-        <children/>
-      </scrollpane>
     </children>
   </grid>
 </form>
