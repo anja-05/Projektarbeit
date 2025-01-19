@@ -173,105 +173,11 @@ public class ArztMenu extends JFrame {
 
     private void patientBearbeiten(){
         SwingUtilities.invokeLater(() -> {
-            ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten();
+            ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, new PatientDAO(connection));
             arztPatientBearbeiten.setVisible(true);
         });
     }
-/*
-    public void editPatientData(){
-        String patientenID = JOptionPane.showInputDialog(this, "Geben Sie die Patienten ID ein:");
 
-        if(patientenID == null || patientenID.isEmpty()) return;
-        try{
-            String query = "SELECT * FROM patient WHERE PatientenID = ?";
-            try(PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, Integer.parseInt(patientenID));
-                ResultSet set = preparedStatement.executeQuery();
-
-                if(set.next()){
-                    JPanel panel = new JPanel(new GridLayout(11,2,5,5));
-                    panel.add(new JLabel("Vorname:"));
-                    JTextField vornameField = new JTextField(set.getString("Vorname"));
-                    panel.add(vornameField);
-
-                    panel.add(new JLabel("Nachname:"));
-                    JTextField nachnameField = new JTextField(set.getString("Nachname"));
-                    panel.add(nachnameField);
-
-                    panel.add(new JLabel("Geburtsdatum:"));
-                    JTextField geburtsdatumField = new JTextField(set.getString("Geburtsdatum"));
-                    panel.add(geburtsdatumField);
-
-                    panel.add(new JLabel("Sozialversicherungsnummer:"));
-                    JTextField sozialversicherungsnummerField = new JTextField(set.getString("Sozialversicherungsnummer"));
-                    panel.add(sozialversicherungsnummerField);
-
-                    panel.add(new JLabel("Straße:"));
-                    JTextField strasseField = new JTextField(set.getString("strasse"));
-                    panel.add(strasseField);
-
-                    panel.add(new JLabel("Postleitzahl:"));
-                    JTextField postleitzahlField = new JTextField(set.getString("Postleitzahl"));
-                    panel.add(postleitzahlField);
-
-                    panel.add(new JLabel("Ort:"));
-                    JTextField ortField = new JTextField(set.getString("Ort"));
-                    panel.add(ortField);
-
-                    panel.add(new JLabel("Telefon:"));
-                    JTextField telefonField = new JTextField(set.getString("Telefon"));
-                    panel.add(telefonField);
-
-                    panel.add(new JLabel("Mail:"));
-                    JTextField mailField = new JTextField(set.getString("Mail"));
-                    panel.add(mailField);
-
-                    panel.add(new JLabel("Krankenkasse:"));
-                    JComboBox<String> krankenkassaComboBox = new JComboBox<>(new String[]{"ÖGK", "SVS", "BVAEB"});
-                    krankenkassaComboBox.setSelectedItem(getKrankenkassaName(set.getInt("krankenkassenID")));
-                    panel.add(krankenkassaComboBox);
-
-                    JButton saveButton = new JButton("Änderungen gespeichert");
-                    saveButton.addActionListener(e -> {
-                        try{
-                            String updateSql = "UPDATE patient SET vorname = ?, nachname = ?, geburtsdatum = ?, sozialversicherungsnummer = ?, strasse = ?, postleitzahl = ?, ort = ?, telefon = ?, mail = ?, krankenkassenID = ? WHERE PatientenID = ?";
-                            try(PreparedStatement update = connection.prepareStatement(updateSql)) {
-                                update.setString(1, vornameField.getText());
-                                update.setString(2, nachnameField.getText());
-                                update.setString(3, geburtsdatumField.getText());
-                                update.setString(4, sozialversicherungsnummerField.getText());
-                                update.setString(5, strasseField.getText());
-                                update.setInt(6, Integer.parseInt(postleitzahlField.getText()));
-                                update.setString(7, ortField.getText());
-                                update.setString(8, telefonField.getText());
-                                update.setString(9, mailField.getText());
-                                update.setInt(10, getKrankenkassaID((String) krankenkassaComboBox.getSelectedItem()));
-                                update.setInt(11, Integer.parseInt(patientenID));
-                                update.executeUpdate();
-
-                                JOptionPane.showMessageDialog(this, "Patientdaten wurde aktualisiert.");
-                            }
-                            resetToDefaultView();
-                        } catch (SQLException ex) {
-                            JOptionPane.showMessageDialog(this, "Fehler:" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-                        }
-                    });
-                    panel.add(saveButton);
-                    updateContentPane(panel);
-                } else{
-                    JOptionPane.showMessageDialog(this, "Fehler: Der Patient existiert nicht.");
-                }
-            }
-
-        } catch(SQLException ex){
-            JOptionPane.showMessageDialog(this, "Fehler:" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-        } catch(NullPointerException ex){
-            JOptionPane.showMessageDialog(this, "Fehler: Der Patient existiert nicht.", "Fehler", JOptionPane.ERROR_MESSAGE);
-        }catch(NumberFormatException ex){
-            JOptionPane.showMessageDialog(this, "Fehler: Ungültige Patienten Id", "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-*/
     private void drucken(){
 
     }
