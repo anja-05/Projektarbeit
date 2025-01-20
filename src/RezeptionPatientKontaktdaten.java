@@ -36,38 +36,26 @@ public class RezeptionPatientKontaktdaten extends JFrame {
      * Initialisiert die Eigenschaften des Fenster (Größe, Titel, Schließverhalten, Position)
      */
         private void initializeProperties() {
-            try {
                 setTitle("Kontaktdaten");
                 setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 setSize(400, 300);
                 setLocationRelativeTo(null);
-            }catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Fehler beim Initialisieren der Fenstereigenschaften.", "Fehler", JOptionPane.ERROR_MESSAGE);
-            }
         }
 
     /**
      * Setzt die Inhalte/Komponenten des GUI-Fensters
      */
     private void initializeView() {
-        try {
             setContentPane(contentPane);
             pack();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Initialisieren der GUI.", "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
         }
 
     /**
      * Initialisiert die Event-Listener für die Buttons (speichernButton, zurückButton)
      */
     private void initializeButtonListeners() {
-        try {
             speichernButton.addActionListener(this::speichernPerformed);
             zurückButton.addActionListener(e -> returnToRezeptionPatientErstellen());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Initialisieren der Button-Listener.", "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
         }
 
     /**

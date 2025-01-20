@@ -1,11 +1,24 @@
 import javax.swing.*;
+import java.awt.*;
 import java.sql.Connection;
 
 public class ArztPatientBearbeiten extends JFrame {
     private JMenuBar menuBar;
-    private JMenu datenMenu, medikamenteMenu;
+    private JMenu datenMenu, medikamenteMenu, fileMenu;
     private JMenuItem persoenlicheDatenItem, kontaktdatenItem;
     private JMenuItem medikamenteNeuItem, medikamenteLoeschenItem, medikamenteAlleAnzeigenItem;
+    private JMenuItem exitItem;
+    private JLabel dateLabel;
+
+    //Bausteine für ToolBar
+    private JToolBar toolBar;
+    private JButton editButton;
+    private JButton deleteButton;
+    private JButton createButton;
+    private JButton exitButton;
+    private JButton druckenButton;
+    private JButton allButton;
+    private JLabel date;
 
     private Connection connection;
     private PatientDAO patientDAO;
@@ -24,6 +37,7 @@ public class ArztPatientBearbeiten extends JFrame {
         initializeMenuBar();
         promptForPatientId();
         initializeMenuListeners();
+        initializeToolBar();
     }
 
     private void initializeFrame() {
@@ -52,6 +66,13 @@ public class ArztPatientBearbeiten extends JFrame {
         medikamenteMenu.add(medikamenteLoeschenItem);
         medikamenteMenu.add(medikamenteAlleAnzeigenItem);
 
+        // Menü für File
+        fileMenu = new JMenu("File");
+        exitItem = new JMenuItem("Beenden");
+        exitItem.addActionListener(e -> dispose());
+        fileMenu.add(exitItem);
+
+        menuBar.add(fileMenu);
         menuBar.add(datenMenu);
         menuBar.add(medikamenteMenu);
 
@@ -59,6 +80,64 @@ public class ArztPatientBearbeiten extends JFrame {
 
         // Event Listener für die Menü-Items
         initializeMenuListeners();
+    }
+
+    private void initializeToolBar(){
+            toolBar = new JToolBar();
+            toolBar.setFloatable(false);
+
+            toolBar.addSeparator();
+
+            exitButton = new JButton();
+            ImageIcon imageIcon = new ImageIcon("Icons/multiple_17253027.png");
+            Image image = imageIcon.getImage();
+            Image scaledImage = image.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(scaledImage);
+            exitButton.setIcon(scaledIcon);
+            exitButton.setToolTipText("Exit");
+            exitButton.addActionListener(e -> dispose());
+            toolBar.add(exitButton);
+
+            toolBar.addSeparator();
+
+            createButton = new JButton();
+            ImageIcon imageIcon2 = new ImageIcon("Icons/receptionist_17626336.png");
+            Image image2 = imageIcon2.getImage();
+            Image scaledImage2 = image2.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon2 = new ImageIcon(scaledImage2);
+            createButton.setIcon(scaledIcon2);
+            createButton.setToolTipText("Neuen Patienten erstellen");
+            createButton.addActionListener(e -> createMedikation());
+            toolBar.add(createButton);
+
+            toolBar.addSeparator();
+
+            allButton = new JButton();
+            ImageIcon imageIcon6 = new ImageIcon("Icons/menu_7699137.png");
+            Image image6 = imageIcon6.getImage();
+            Image scaledImage6 = image6.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon6 = new ImageIcon(scaledImage6);
+            allButton.setIcon(scaledIcon6);
+            allButton.setToolTipText("Alle Patienten");
+            allButton.addActionListener(e -> showAllMedikation());
+            toolBar.add(allButton);
+
+            JLabel dateLabel = new JLabel();
+            dateLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+            toolBar.add(Box.createHorizontalGlue());
+            toolBar.add(dateLabel);
+
+            Timer timer = new Timer(1000, e -> {
+                dateLabel.setText(java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")));
+            });
+            timer.start();
+
+            add(toolBar, BorderLayout.NORTH);
+    }
+
+    private Image scaleIcon(String path){
+            ImageIcon icon = new ImageIcon(path);
+            return icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
     }
 
     private void initializeMenuListeners() {

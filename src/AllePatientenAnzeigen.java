@@ -109,6 +109,7 @@ public class AllePatientenAnzeigen extends JFrame {
             try {
                 List<Patient> allePatienten = patientDAO.getAllePatienten();
                 aktualisiereTabelle(allePatienten);
+                suchenField.setText("");
             } catch (SQLException ex) {
                 showErrorDialog("Fehler beim Abrufen der Patienten: " + ex.getMessage());
             } catch (Exception ex) {

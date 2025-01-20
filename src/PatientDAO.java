@@ -2,8 +2,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class PatientDAO {
@@ -139,14 +141,15 @@ public class PatientDAO {
                 pattern.matcher(patient.getMail() != null ? patient.getMail() : "").find() ||
                 pattern.matcher(patient.getBundesland() != null ? patient.getBundesland() : "").find();
     }
-
+/*
     public String getPatientDetails(int patientenID) throws SQLException {
         String query = """
-            SELECT patient.PatientenID, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
-                   patient.Sozialversicherungsnummer, patient.Strasse, patient.Postleitzahl,
-                   patient.Ort, patient.Telefon, patient.Mail, krankenkasse.Bezeichnung AS Krankenkasse
+            SELECT patient.PatientenID, patient.Anrede, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
+                   patient.Sozialversicherungsnummer, krankenkasse.Bezeichnung AS Krankenkasse, patient.Strasse, patient.Postleitzahl,
+                   patient.Ort, patient.Telefon, patient.Mail, bundesland.Bezeichnung AS Bundesland
             FROM patient
-            JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
+            LEFT JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
+            LEFT JOIN bundesland ON patient.bundeslandID = bundesland.bundeslandID
             WHERE patient.PatientenID = ?;
         """;
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -180,6 +183,64 @@ public class PatientDAO {
             }
         }
         return null;
+    }*/
+
+    public String getPatientDetails(int patientenID) {
+        String query = """
+        SELECT patient.PatientenID, patient.Anrede, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
+               patient.Sozialversicherungsnummer, krankenkasse.Bezeichnung AS Krankenkasse, patient.Strasse, patient.Postleitzahl,
+               patient.Ort, patient.Telefon, patient.Mail, bundesland.Bezeichnung AS Bundesland
+        FROM patient
+        LEFT JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
+        LEFT JOIN bundesland ON patient.bundeslandID = bundesland.bundeslandID
+        WHERE patient.PatientenID = ?;
+    """;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, patientenID);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String anrede = Optional.ofNullable(resultSet.getString("Anrede")).orElse("N/A");
+                    String vorname = Optional.ofNullable(resultSet.getString("Vorname")).orElse("N/A");
+                    String nachname = Optional.ofNullable(resultSet.getString("Nachname")).orElse("N/A");
+                    String geburtsdatum = Optional.ofNullable(resultSet.getDate("Geburtsdatum"))
+                            .map(date -> new SimpleDateFormat("yyyy-MM-dd").format(date))
+                            .orElse("N/A");
+                    String sozialversicherungsnummer = Optional.ofNullable(resultSet.getString("Sozialversicherungsnummer")).orElse("N/A");
+                    String strasse = Optional.ofNullable(resultSet.getString("Strasse")).orElse("N/A");
+                    String postleitzahl = Optional.ofNullable(resultSet.getString("Postleitzahl")).orElse("N/A");
+                    String ort = Optional.ofNullable(resultSet.getString("Ort")).orElse("N/A");
+                    String telefon = Optional.ofNullable(resultSet.getString("Telefon")).orElse("N/A");
+                    String mail = Optional.ofNullable(resultSet.getString("Mail")).orElse("N/A");
+                    String krankenkasse = Optional.ofNullable(resultSet.getString("Krankenkasse")).orElse("N/A");
+                    String bundesland = Optional.ofNullable(resultSet.getString("Bundesland")).orElse("N/A");
+
+                    return String.format("""
+                    Anrede: %s
+                    Vorname: %s
+                    Nachname: %s
+                    Geburtsdatum: %s
+                    Sozialversicherungsnummer: %s
+                    Straße: %s
+                    Postleitzahl: %s
+                    Ort: %s
+                    Telefon: %s
+                    Mail: %s
+                    Krankenkasse: %s
+                    Bundesland: %s
+                    """,
+                            anrede, vorname, nachname, geburtsdatum, sozialversicherungsnummer,
+                            strasse, postleitzahl, ort, telefon, mail, krankenkasse, bundesland
+                    );
+                } else {
+                    return "Patient nicht gefunden.";
+                }
+            }
+        } catch (SQLException e) {
+            // Log exception (z. B. mit Logger)
+            return "Fehler beim Abrufen der Patientendaten: " + e.getMessage();
+        }
     }
 
     public boolean deletePatient(int patientenID) throws SQLException {
@@ -191,20 +252,24 @@ public class PatientDAO {
         }
     }
 
-    public Patient getPatientById(int patientId) {
+    public Patient getPatientById(int patientenID)  {
         String query = """
-    SELECT p.patientenID, p.anrede, p.vorname, p.nachname, p.geburtsdatum, p.sozialversicherungsnummer, 
-           k.bezeichnung AS versicherung, p.strasse, p.postleitzahl, p.ort, p.telefon, p.mail, 
-           b.bezeichnung AS bundesland
-    FROM patient p
-    LEFT JOIN krankenkasse k ON p.krankenkassenID = k.krankenkassenID
-    LEFT JOIN bundesland b ON p.bundeslandID = b.bundeslandID
-    WHERE p.patientenID = ?
-""";
+        SELECT patient.PatientenID, patient.Anrede, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
+               patient.Sozialversicherungsnummer, krankenkasse.Bezeichnung AS Krankenkasse,
+               patient.Strasse, patient.Postleitzahl, patient.Ort, patient.Telefon, patient.Mail,
+               bundesland.Bezeichnung AS Bundesland
+        FROM patient
+        LEFT JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
+        LEFT JOIN bundesland ON patient.bundeslandID = bundesland.bundeslandID
+        WHERE patient.PatientenID = ?;
+    """;
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, patientId);
+            preparedStatement.setInt(1, patientenID);
             ResultSet resultSet = preparedStatement.executeQuery();
+
             if (resultSet.next()) {
+                // Patient-Objekt erstellen und Felder setzen
                 Patient patient = new Patient();
                 patient.setPatientID(resultSet.getInt("PatientenID"));
                 patient.setAnrede(resultSet.getString("Anrede"));
@@ -212,19 +277,20 @@ public class PatientDAO {
                 patient.setNachname(resultSet.getString("Nachname"));
                 patient.setGeburtsdatum(resultSet.getDate("Geburtsdatum"));
                 patient.setSozialversicherungsnummer(resultSet.getInt("Sozialversicherungsnummer"));
-                patient.setVersicherung(resultSet.getString("Versicherung"));
-                patient.setTelefon(resultSet.getString("Telefon"));
-                patient.setMail(resultSet.getString("Mail"));
+                patient.setVersicherung(resultSet.getString("Krankenkasse"));
                 patient.setStrasse(resultSet.getString("Strasse"));
                 patient.setPostleitzahl(resultSet.getInt("Postleitzahl"));
                 patient.setOrt(resultSet.getString("Ort"));
+                patient.setTelefon(resultSet.getString("Telefon"));
+                patient.setMail(resultSet.getString("Mail"));
                 patient.setBundesland(resultSet.getString("Bundesland"));
-                return patient;
+
+                return patient; // Rückgabe des Patient-Objekts
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null; // Wenn kein Patient gefunden wurde
+        return null; // Kein Patient gefunden
     }
 
     public boolean updatePatient(Patient patient) {
@@ -254,22 +320,4 @@ public class PatientDAO {
         }
         return false;
     }
-
-/*
-    //Methode zum Erstellen eines neuen Patienten
-    public void createPatient(Patient patient) throws SQLException {
-        String query = "INSERT INTO patient (vorname, nachname, geburtsdatum, sozialversicherungsnummer, strasse, postleitzahl, ort, telefon, mail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, patient.getVorname());
-            stmt.setString(2, patient.getNachname());
-            stmt.setDate(3, patient.getGeburtsdatum());
-            stmt.setInt(4, patient.getSozialversicherungsnummer());
-            stmt.setString(5, patient.getStrasse());
-            stmt.setInt(6, patient.getPostleitzahl());
-            stmt.setString(7, patient.getOrt());
-            stmt.setString(8, patient.getTelefon());
-            stmt.setString(9, patient.getMail());
-            stmt.executeUpdate();
-        }
-    }*/
 }
