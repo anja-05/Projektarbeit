@@ -141,49 +141,6 @@ public class PatientDAO {
                 pattern.matcher(patient.getMail() != null ? patient.getMail() : "").find() ||
                 pattern.matcher(patient.getBundesland() != null ? patient.getBundesland() : "").find();
     }
-/*
-    public String getPatientDetails(int patientenID) throws SQLException {
-        String query = """
-            SELECT patient.PatientenID, patient.Anrede, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
-                   patient.Sozialversicherungsnummer, krankenkasse.Bezeichnung AS Krankenkasse, patient.Strasse, patient.Postleitzahl,
-                   patient.Ort, patient.Telefon, patient.Mail, bundesland.Bezeichnung AS Bundesland
-            FROM patient
-            LEFT JOIN krankenkasse ON patient.krankenkassenID = krankenkasse.krankenkassenID
-            LEFT JOIN bundesland ON patient.bundeslandID = bundesland.bundeslandID
-            WHERE patient.PatientenID = ?;
-        """;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, patientenID);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-                return String.format("""
-                    Vorname: %s
-                    Nachname: %s
-                    Geburtsdatum: %s
-                    Sozialversicherungsnummer: %s
-                    Straße: %s
-                    Postleitzahl: %s
-                    Ort: %s
-                    Telefon: %s
-                    Mail: %s
-                    Krankenkasse: %s
-                    """,
-                        resultSet.getString("Vorname"),
-                        resultSet.getString("Nachname"),
-                        resultSet.getString("Geburtsdatum"),
-                        resultSet.getString("Sozialversicherungsnummer"),
-                        resultSet.getString("Strasse"),
-                        resultSet.getString("Postleitzahl"),
-                        resultSet.getString("Ort"),
-                        resultSet.getString("Telefon"),
-                        resultSet.getString("Mail"),
-                        resultSet.getString("Krankenkasse")
-                );
-            }
-        }
-        return null;
-    }*/
 
     public String getPatientDetails(int patientenID) {
         String query = """

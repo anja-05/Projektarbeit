@@ -27,12 +27,8 @@ public class AllePatientenAnzeigen extends JFrame {
         initializeView();
         initializeButtonListeners();
 
-        try {
-            List<Patient> patientenListe = patientDAO.getAllePatienten();
-            aktualisiereTabelle(patientenListe);
-        } catch (SQLException e) {
-            showErrorDialog("Fehler beim Abrufen der Patienten: " + e.getMessage());
-        }
+        // Lade Patienten im Hintergrund
+        new PatientenLadenThread().start();
     }
 
     /**
@@ -79,42 +75,17 @@ public class AllePatientenAnzeigen extends JFrame {
      * Initialisiert Action Listeners für die Buttons (zurückButton, suchenButton, allePatientenButton)
      */
     private void initializeButtonListeners() {
-        zurückButton.addActionListener(e -> {
-            dispose();
-        });
+        zurückButton.addActionListener(e -> dispose());
 
         suchenButton.addActionListener(e -> {
             String regex = suchenField.getText().trim();
             if (!regex.isEmpty()) {
-                try {
-                    List<Patient> gefiltertePatienten = patientDAO.suchePatientenMitRegex(regex);
-                    aktualisiereTabelle(gefiltertePatienten);
-                } catch (SQLException ex) {
-                    showErrorDialog("Fehler bei der Suche: " + ex.getMessage());
-                } catch (Exception ex) {
-                showErrorDialog("Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage());
-                }
+                new PatientenSuchenThread(regex).start();
             } else {
-                try {
-                    // Zeigt alle Patienten an, wenn das Suchfeld leer ist
-                    aktualisiereTabelle(patientDAO.getAllePatienten());
-                } catch (SQLException ex) {
-                    showErrorDialog("Fehler beim Abrufen der Patienten: " + ex.getMessage());
-                } catch (Exception ex) {
-                    showErrorDialog("Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage());
-                }
+                new PatientenLadenThread().start();
             }
         });
-        allePatientenButton.addActionListener(e -> {
-            try {
-                List<Patient> allePatienten = patientDAO.getAllePatienten();
-                aktualisiereTabelle(allePatienten);
-                suchenField.setText("");
-            } catch (SQLException ex) {
-                showErrorDialog("Fehler beim Abrufen der Patienten: " + ex.getMessage());
-            } catch (Exception ex) {
-                showErrorDialog("Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage());
-            }
+        allePatientenButton.addActionListener(e -> {new PatientenLadenThread().start();
         });
     }
 
@@ -151,5 +122,41 @@ public class AllePatientenAnzeigen extends JFrame {
      */
     private void showErrorDialog(String message) {
         JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
+     * Thread für das Laden aller Patienten
+     */
+    private class PatientenLadenThread extends Thread {
+        @Override
+        public void run() {
+            try {
+                List<Patient> patientenListe = patientDAO.getAllePatienten();
+                SwingUtilities.invokeLater(() -> aktualisiereTabelle(patientenListe));
+            } catch (SQLException e) {
+                SwingUtilities.invokeLater(() -> showErrorDialog("Fehler beim Laden der Patienten: " + e.getMessage()));
+            }
+        }
+    }
+
+    /**
+     * Thread für die Regex-Suche von Patienten
+     */
+    private class PatientenSuchenThread extends Thread {
+        private String regex;
+
+        public PatientenSuchenThread(String regex) {
+            this.regex = regex;
+        }
+
+        @Override
+        public void run() {
+            try {
+                List<Patient> gefiltertePatienten = patientDAO.suchePatientenMitRegex(regex);
+                SwingUtilities.invokeLater(() -> aktualisiereTabelle(gefiltertePatienten));
+            } catch (SQLException e) {
+                SwingUtilities.invokeLater(() -> showErrorDialog("Fehler bei der Suche: " + e.getMessage()));
+            }
+        }
     }
 }
