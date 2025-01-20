@@ -29,6 +29,18 @@ public class Main {
         }
 
         Connection finalConnection = connection;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                if (finalConnection != null && !finalConnection.isClosed()) {
+                    finalConnection.close();
+                    System.out.println("Datenbankverbindung geschlossen.");
+                }
+            } catch (SQLException e) {
+                System.err.println("Fehler beim Schließen der Datenbankverbindung.");
+                e.printStackTrace();
+            }
+        }));
+
         SwingUtilities.invokeLater(() -> {
             Main controller = new Main(finalConnection);
             controller.showLogin();
@@ -63,19 +75,6 @@ public class Main {
         rezeptionMenuGUI.setVisible(true);
         if (loginGUI != null) {
             loginGUI.dispose();
-        }
-    }
-
-    //Verbindung schließen
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Datenbankverbindung geschlossen.");
-            }
-        } catch (SQLException e) {
-            System.err.println("Fehler beim Schließen der Datenbankverbindung.");
-            e.printStackTrace();
         }
     }
 }
