@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.sql.Connection;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -17,10 +16,8 @@ public class ArztPersoenlicheDaten extends JFrame {
     private JButton abbrechenButton;
     private JButton speichernButton;
 
-    private Connection connection;
     private PatientDAO patientDAO;
     private Patient patient;
-
 
     public ArztPersoenlicheDaten(Patient patient, PatientDAO patientDAO) {
         this.patient = patient;
@@ -32,19 +29,19 @@ public class ArztPersoenlicheDaten extends JFrame {
         loadPatientData();
     }
 
-    private void initializeProperties(){
+    private void initializeProperties() {
         setTitle("Persönliche Daten bearbeiten");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(400, 300);
         setLocationRelativeTo(null);
     }
 
-    private void initializeView(){
+    private void initializeView() {
         setContentPane(contentPane);
         pack();
     }
 
-    private void initializeButtonListerners(){
+    private void initializeButtonListerners() {
         speichernButton.addActionListener(this::saveChanges);
         abbrechenButton.addActionListener(e -> dispose());
     }
@@ -59,25 +56,42 @@ public class ArztPersoenlicheDaten extends JFrame {
     }
 
     private void saveChanges(ActionEvent e) {
-        try {
-            // Patient-Daten aktualisieren
-            patient.setAnrede((String) anredeComboBox.getSelectedItem());
-            patient.setVorname(vornameTextField.getText());
-            patient.setNachname(nachnameTextField.getText());
-            patient.setGeburtsdatum(java.sql.Date.valueOf(geburtsdatumTextField.getText()));
-            patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
-            patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
+        if (validateFields()) {
+            new Thread(() -> {
+                try {
+                    // Patient-Daten aktualisieren
+                    patient.setAnrede((String) anredeComboBox.getSelectedItem());
+                    patient.setVorname(vornameTextField.getText());
+                    patient.setNachname(nachnameTextField.getText());
+                    patient.setGeburtsdatum(java.sql.Date.valueOf(geburtsdatumTextField.getText()));
+                    patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
+                    patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
 
-            // Daten speichern
-            if (patientDAO.updatePatient(patient)) {
-                JOptionPane.showMessageDialog(this, "Daten erfolgreich gespeichert.");
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Fehler beim Speichern.", "Fehler", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Ungültige Eingabe: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+                    // Daten speichern
+                    boolean success = patientDAO.updatePersoenlicheDaten(patient);
+                    SwingUtilities.invokeLater(() -> {
+                        if (success) {
+                            JOptionPane.showMessageDialog(this, "Daten erfolgreich gespeichert.");
+                            dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Fehler beim Speichern.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(this, "Ungültige Eingabe: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE)
+                );
+                }
+            }).start();
         }
     }
+    private boolean validateFields() {
+        if (anredeComboBox.getSelectedItem() == null || vornameTextField.getText().isEmpty()
+                || nachnameTextField.getText().isEmpty() || geburtsdatumTextField.getText().isEmpty()
+                || svnTextField.getText().isEmpty() || versicherungComboBox.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "Bitte füllen Sie alle Pflichtfelder aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
 }
-

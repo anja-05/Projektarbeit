@@ -107,7 +107,7 @@ public class ArztPatientBearbeiten extends JFrame {
             ImageIcon scaledIcon2 = new ImageIcon(scaledImage2);
             createButton.setIcon(scaledIcon2);
             createButton.setToolTipText("Neuen Patienten erstellen");
-            createButton.addActionListener(e -> createMedikation());
+            createButton.addActionListener(e -> createDiagnosis());
             toolBar.add(createButton);
 
             toolBar.addSeparator();
@@ -119,7 +119,7 @@ public class ArztPatientBearbeiten extends JFrame {
             ImageIcon scaledIcon6 = new ImageIcon(scaledImage6);
             allButton.setIcon(scaledIcon6);
             allButton.setToolTipText("Alle Patienten");
-            allButton.addActionListener(e -> showAllMedikation());
+            allButton.addActionListener(e -> showAllDiagnosis());
             toolBar.add(allButton);
 
             JLabel dateLabel = new JLabel();
@@ -143,9 +143,9 @@ public class ArztPatientBearbeiten extends JFrame {
     private void initializeMenuListeners() {
         persoenlicheDatenItem.addActionListener(e -> showPersoenlicheDaten());
         kontaktdatenItem.addActionListener(e -> showKontaktdaten());
-        medikamenteNeuItem.addActionListener(e -> createMedikation());
-        medikamenteLoeschenItem.addActionListener(e -> deleteMedikation());
-        medikamenteAlleAnzeigenItem.addActionListener(e -> showAllMedikation());
+        medikamenteNeuItem.addActionListener(e -> createDiagnosis());
+        medikamenteLoeschenItem.addActionListener(e -> deleteDiagnosis());
+        medikamenteAlleAnzeigenItem.addActionListener(e -> showAllDiagnosis());
     }
 
     private void promptForPatientId() {
@@ -200,15 +200,15 @@ public class ArztPatientBearbeiten extends JFrame {
         }
     }
 
-    private void createMedikation() {
+    private void createDiagnosis() {
 
     }
 
-    private void deleteMedikation() {
+    private void deleteDiagnosis() {
 
     }
 
-    private void showAllMedikation() {
+    private void showAllDiagnosis() {
 
     }
 }

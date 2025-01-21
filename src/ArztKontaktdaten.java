@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.sql.Connection;
 
 public class ArztKontaktdaten extends JFrame {
 
@@ -14,7 +13,6 @@ public class ArztKontaktdaten extends JFrame {
     private JButton abbrechenButton;
     private JButton speichernButton;
 
-    private Connection connection;
     private Patient patient;
     private PatientDAO patientDAO;
 
@@ -58,26 +56,40 @@ public class ArztKontaktdaten extends JFrame {
     }
 
     private void saveChanges(ActionEvent e) {
-        try {
-            // Speichere die eingegebenen Daten in das Patient-Objekt
-            patient.setTelefon(telTextField.getText());
-            patient.setMail(mailTextField.getText());
-            patient.setStrasse(strasseTextField.getText());
-            patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
-            patient.setOrt(ortTextField.getText());
-            patient.setBundesland((String) bundeslandComboBox.getSelectedItem());
+        new Thread(() -> {
+            try {
+                // Speichere die eingegebenen Daten in das Patient-Objekt
+                patient.setTelefon(telTextField.getText());
+                patient.setMail(mailTextField.getText());
+                patient.setStrasse(strasseTextField.getText());
+                patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
+                patient.setOrt(ortTextField.getText());
+                Object selectedItem = bundeslandComboBox.getSelectedItem();
+                if (selectedItem == null || selectedItem.toString().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Bitte wählen Sie ein Bundesland aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                patient.setBundesland(selectedItem.toString());
 
-            // Speichere die Änderungen in der Datenbank
-            if (patientDAO.updatePatient(patient)) {
-                JOptionPane.showMessageDialog(this, "Kontaktdaten erfolgreich gespeichert.");
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Fehler beim Speichern der Kontaktdaten.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                // Speichere die Änderungen in der Datenbank
+                boolean success = patientDAO.updateKontaktdaten(patient);
+                SwingUtilities.invokeLater(() -> {
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "Kontaktdaten erfolgreich gespeichert.");
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Fehler beim Speichern der Kontaktdaten.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                }
+                });
+            } catch (NumberFormatException ex) {
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this, "Die Postleitzahl muss eine Zahl sein.", "Fehler", JOptionPane.ERROR_MESSAGE)
+                );
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this, "Fehler: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE)
+                );
             }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Die Postleitzahl muss eine Zahl sein.", "Fehler", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Fehler: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
+        }).start();
     }
 }

@@ -36,7 +36,7 @@ public class PatientDAO {
                 return resultSet.getInt("krankenkassenID");
             }
         }
-        return -1; // Wenn nicht gefunden
+        throw new IllegalArgumentException("Ungültige Krankenkasse: " + versicherung);
     }
 
     public Connection getConnection() {
@@ -271,6 +271,48 @@ public class PatientDAO {
             preparedStatement.setString(11, patient.getOrt());
             preparedStatement.setInt(12, getBundeslandID(patient.getBundesland()));
             preparedStatement.setInt(13, patient.getPatientID());
+            return preparedStatement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updatePersoenlicheDaten(Patient patient) {
+        String query = """
+        UPDATE patient 
+        SET Anrede = ?, Vorname = ?, Nachname = ?, Geburtsdatum = ?, Sozialversicherungsnummer = ?, krankenkassenID = ?
+        WHERE PatientenID = ?
+    """;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, patient.getAnrede());
+            preparedStatement.setString(2, patient.getVorname());
+            preparedStatement.setString(3, patient.getNachname());
+            preparedStatement.setDate(4, patient.getGeburtsdatum());
+            preparedStatement.setInt(5, patient.getSozialversicherungsnummer());
+            preparedStatement.setInt(6, getKrankenkassenID(patient.getVersicherung()));
+            preparedStatement.setInt(7, patient.getPatientID());
+            return preparedStatement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateKontaktdaten(Patient patient) {
+        String query = """
+        UPDATE patient 
+        SET Telefon = ?, Mail = ?, Strasse = ?, Postleitzahl = ?, Ort = ?, bundeslandID = ?
+        WHERE PatientenID = ?
+    """;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, patient.getTelefon());
+            preparedStatement.setString(2, patient.getMail());
+            preparedStatement.setString(3, patient.getStrasse());
+            preparedStatement.setInt(4, patient.getPostleitzahl());
+            preparedStatement.setString(5, patient.getOrt());
+            preparedStatement.setInt(6, getBundeslandID(patient.getBundesland()));
+            preparedStatement.setInt(7, patient.getPatientID());
             return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
