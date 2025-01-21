@@ -20,7 +20,8 @@ public class RezeptionPatientBearbeitenKontaktdaten extends JFrame {
 
     /**
      * Konstruktor für die Bearbeitung der Kontaktdaten eines Patienten
-     * @param patient Patient, dessen Kontaktdaten bearbeitet werden sollen
+     *
+     * @param patient    Patient, dessen Kontaktdaten bearbeitet werden sollen
      * @param patientDAO DAO-Objekt für den Zugriff auf Patientendaten
      */
     public RezeptionPatientBearbeitenKontaktdaten(Patient patient, PatientDAO patientDAO) {
@@ -88,6 +89,7 @@ public class RezeptionPatientBearbeitenKontaktdaten extends JFrame {
 
     /**
      * Setzt die Kontaktdaten des Patienten in die GUI-Eingabefelder
+     *
      * @param patient Patient, dessen Daten angezeigt werden sollen
      */
     public void setFields(Patient patient) {
@@ -105,6 +107,7 @@ public class RezeptionPatientBearbeitenKontaktdaten extends JFrame {
 
     /**
      * Verarbeitet das Speichern der eingegebenen Daten und zeigt entsprechende Fehlermeldungen/Bestätigungen an
+     *
      * @param actionEvent das augelöste Event
      */
     private void speichernPerformed(ActionEvent actionEvent) {
@@ -113,25 +116,24 @@ public class RezeptionPatientBearbeitenKontaktdaten extends JFrame {
             JOptionPane.showMessageDialog(this, "Bitte wählen Sie ein Bundesland aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        patient.setTelefon(telefonTextField.getText());
-        patient.setMail(mailTextField.getText());
-        patient.setStrasse(strasseTextField.getText());
-        try {
-            patient.setPostleitzahl(Integer.parseInt(postleitzahlTextField.getText()));
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Die Postleitzahl muss eine Zahl sein.", "Fehler", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        patient.setOrt(ortTextField.getText());
-        patient.setBundesland((String) bundeslandComboBox.getSelectedItem());
-
         saveCurrentFieldsToPatient();
-        boolean success = patientDAO.updatePatient(patient);
-        if (success) {
-            JOptionPane.showMessageDialog(this, "Daten erfolgreich gespeichert.");
-            dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, "Fehler beim Speichern des Patienten.", "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
+
+        new Thread(() -> {
+            try {
+                boolean success = patientDAO.updatePatient(patient);
+                SwingUtilities.invokeLater(() -> {
+                    if (success) {
+                        JOptionPane.showMessageDialog(this, "Daten erfolgreich gespeichert.");
+                        dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Fehler beim Speichern des Patienten.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this, "Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE)
+                );
+            }
+        }).start();
     }
 }

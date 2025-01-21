@@ -4,9 +4,9 @@ import java.sql.Connection;
 
 public class ArztPatientBearbeiten extends JFrame {
     private JMenuBar menuBar;
-    private JMenu datenMenu, medikamenteMenu, fileMenu;
+    private JMenu datenMenu, diagnoseMenu, fileMenu;
     private JMenuItem persoenlicheDatenItem, kontaktdatenItem;
-    private JMenuItem medikamenteNeuItem, medikamenteLoeschenItem, medikamenteAlleAnzeigenItem;
+    private JMenuItem medikamenteNeuItem, /*medikamenteLoeschenItem, */medikamenteAlleAnzeigenItem;
     private JMenuItem exitItem;
     private JLabel dateLabel;
 
@@ -58,13 +58,13 @@ public class ArztPatientBearbeiten extends JFrame {
         datenMenu.add(kontaktdatenItem);
 
         // Menü für Medikamente
-        medikamenteMenu = new JMenu("Medikation");
+        diagnoseMenu = new JMenu("Diagnose");
         medikamenteNeuItem = new JMenuItem("Neu erstellen");
-        medikamenteLoeschenItem = new JMenuItem("Löschen");
+        //medikamenteLoeschenItem = new JMenuItem("Löschen");
         medikamenteAlleAnzeigenItem = new JMenuItem("Alle anzeigen");
-        medikamenteMenu.add(medikamenteNeuItem);
-        medikamenteMenu.add(medikamenteLoeschenItem);
-        medikamenteMenu.add(medikamenteAlleAnzeigenItem);
+        diagnoseMenu.add(medikamenteNeuItem);
+       // medikamenteMenu.add(medikamenteLoeschenItem);
+        diagnoseMenu.add(medikamenteAlleAnzeigenItem);
 
         // Menü für File
         fileMenu = new JMenu("File");
@@ -74,7 +74,7 @@ public class ArztPatientBearbeiten extends JFrame {
 
         menuBar.add(fileMenu);
         menuBar.add(datenMenu);
-        menuBar.add(medikamenteMenu);
+        menuBar.add(diagnoseMenu);
 
         setJMenuBar(menuBar);
 
@@ -144,7 +144,7 @@ public class ArztPatientBearbeiten extends JFrame {
         persoenlicheDatenItem.addActionListener(e -> showPersoenlicheDaten());
         kontaktdatenItem.addActionListener(e -> showKontaktdaten());
         medikamenteNeuItem.addActionListener(e -> createDiagnosis());
-        medikamenteLoeschenItem.addActionListener(e -> deleteDiagnosis());
+        //medikamenteLoeschenItem.addActionListener(e -> deleteDiagnosis());
         medikamenteAlleAnzeigenItem.addActionListener(e -> showAllDiagnosis());
     }
 
@@ -204,9 +204,9 @@ public class ArztPatientBearbeiten extends JFrame {
 
     }
 
-    private void deleteDiagnosis() {
+   /* private void deleteDiagnosis() {
 
-    }
+    }*/
 
     private void showAllDiagnosis() {
 

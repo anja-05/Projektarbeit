@@ -67,13 +67,18 @@ public class RezeptionPatientBearbeiten extends JFrame {
      * Wechselt zurück zum Hauptmenü der Rezeption und schließt das aktuelle Fenster
      */
     private void returnToRezeptionMenu() {
-        try{
-            this.dispose();
-            RezeptionMenu rezeptionMenu = new RezeptionMenu(connection, patientDAO);
-            rezeptionMenu.setVisible(true);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Laden des Hauptmenüs: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
+        new Thread(() -> {
+            try {
+                SwingUtilities.invokeLater(() -> dispose());
+                RezeptionMenu rezeptionMenu = new RezeptionMenu(connection, patientDAO);
+                SwingUtilities.invokeLater(() -> rezeptionMenu.setVisible(true));
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this,
+                                "Fehler beim Laden des Hauptmenüs: " + ex.getMessage(),
+                                "Fehler", JOptionPane.ERROR_MESSAGE));
+            }
+        }).start();
     }
 
     /**
@@ -82,6 +87,7 @@ public class RezeptionPatientBearbeiten extends JFrame {
      */
     private void actionPerformed(ActionEvent actionEvent) {
         if (validateFields()) {
+            new Thread(() -> {
             try {
             patient.setAnrede((String) AnredeComboBox.getSelectedItem());
             patient.setVorname(VornameTextField.getText());
@@ -102,14 +108,18 @@ public class RezeptionPatientBearbeiten extends JFrame {
             }
             patient.setVersicherung((String) VersicherungComboBox.getSelectedItem());
 
+            SwingUtilities.invokeLater(() -> {
             dispose();
             RezeptionPatientBearbeitenKontaktdaten kontaktFenster = new RezeptionPatientBearbeitenKontaktdaten(patient, patientDAO);
             kontaktFenster.setFields(patient);
             kontaktFenster.setVisible(true);
+            });
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Ein unbekannter Fehler ist aufgetreten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+                SwingUtilities.invokeLater(() ->
+                JOptionPane.showMessageDialog(this, "Ein unbekannter Fehler ist aufgetreten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE));
             }
-        }
+        }).start();
+     }
     }
 
     /**

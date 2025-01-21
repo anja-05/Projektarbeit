@@ -239,6 +239,7 @@ public class RezeptionMenu extends JFrame {
      * Bearbeitet die persönlichen- und Kontakdaten eines bestehenden Patientens
      */
         private void patientBearbeiten() {
+            new Thread(() -> {
             try{
             String patientenIDString = JOptionPane.showInputDialog(this, "Geben Sie die Patienten-ID ein, die Sie bearbeiten möchten:");
             if (patientenIDString == null || patientenIDString.isEmpty()) return;
@@ -248,20 +249,24 @@ public class RezeptionMenu extends JFrame {
                     JOptionPane.showMessageDialog(this, "Kein Patient mit der ID " + patientenID + " gefunden.", "Fehler", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+                SwingUtilities.invokeLater(() -> {
                 RezeptionPatientBearbeiten bearbeitenFenster = new RezeptionPatientBearbeiten(connection, patientDAO);
                 bearbeitenFenster.setFields(patient);
                 bearbeitenFenster.setVisible(true);
+                });
             } catch (NumberFormatException e) {
-                showErrorDialog("Ungültige Patienten-ID. Bitte geben Sie eine gültige Zahl ein.");
+                SwingUtilities.invokeLater(() -> showErrorDialog("Ungültige Patienten-ID. Bitte geben Sie eine gültige Zahl ein."));
             } catch (Exception e) {
-                showErrorDialog("Fehler beim Bearbeiten des Patienten: " + e.getMessage());
+                SwingUtilities.invokeLater(() -> showErrorDialog("Fehler beim Bearbeiten des Patienten: " + e.getMessage()));
             }
+            }).start();
         }
 
     /**
      * Löscht einen Patienten aus der Datenbank
      */
     private void patientLöschen() {
+        new Thread(() -> {
         try{
         String patientenIDString = JOptionPane.showInputDialog(this, "Geben Sie die Patienten ID ein:");
         if (patientenIDString == null || patientenIDString.isEmpty()) return;
@@ -274,17 +279,21 @@ public class RezeptionMenu extends JFrame {
             }
             int confirm = JOptionPane.showConfirmDialog(this, "Möchten Sie den Patienten wirklich löschen?\n\n" + patientDaten, "Bestätigung", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                if (patientDAO.deletePatient(patientenID)) {
+                boolean deleted = patientDAO.deletePatient(patientenID);
+                SwingUtilities.invokeLater(() -> {
+                if (deleted) {
                     JOptionPane.showMessageDialog(this, "Patient wurde erfolgreich gelöscht.");
                 } else {
                     showErrorDialog("Fehler beim Löschen des Patienten.");
                 }
+                });
             }
         } catch (NumberFormatException e) {
-            showErrorDialog("Ungültige Patienten-ID. Bitte geben Sie eine gültige Zahl ein.");
+            SwingUtilities.invokeLater(() ->  showErrorDialog("Ungültige Patienten-ID. Bitte geben Sie eine gültige Zahl ein."));
         } catch (Exception e) {
-            showErrorDialog("Fehler beim Löschen des Patienten: " + e.getMessage());
+            SwingUtilities.invokeLater(() -> showErrorDialog("Fehler beim Löschen des Patienten: " + e.getMessage()));
         }
+        }).start();
     }
 
     /**
@@ -306,15 +315,18 @@ public class RezeptionMenu extends JFrame {
      * Zeigt alle Patienten die in der Datenbank gespeichert sind an
      */
     private void allePatientenAnzeigen() {
-        try {
-            PatientDAO patientDAO = new PatientDAO(connection);
-            AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
-            fenster.setVisible(true);
-        }catch (NullPointerException ex) {
-            throw new IllegalStateException("Das Fenster konnte nicht geöffnet werden. Möglicherweise sind wichtige Objekte nicht initialisiert.", ex);
-        } catch (Exception ex) {
-            showErrorDialog("Ein unbekannter Fehler ist aufgetreten: " + ex.getMessage());
+        if (patientDAO == null) {
+            showErrorDialog("Fehler: PatientDAO ist nicht initialisiert. Die Patienten können nicht angezeigt werden.");
+            return;
         }
+        new Thread(() -> {
+        try {
+            AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
+            SwingUtilities.invokeLater(() -> fenster.setVisible(true));
+        } catch (Exception ex) {
+            SwingUtilities.invokeLater(() -> showErrorDialog("Ein unbekannter Fehler ist aufgetreten: " + ex.getMessage()));
+        }
+        }).start();
     }
 
     /**

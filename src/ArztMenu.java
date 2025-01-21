@@ -158,11 +158,7 @@ public class ArztMenu extends JFrame {
     private void initializeButtonListeners() {
         exitItem.addActionListener(e -> System.exit(0));
         editItem.addActionListener(e -> patientBearbeiten());
-        allItem.addActionListener(e ->{
-                    PatientDAO patientDAO = new PatientDAO(connection);
-                    AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
-                    fenster.setVisible(true);
-                });
+        allItem.addActionListener(e -> allePatienten());
         helpItem.addActionListener(e-> {
             JOptionPane.showMessageDialog(this,
                     "Bei Problemen kontaktieren Sie uns:\nTelefon: +49 123 456 789\nWebsite: https://www.support-website.com",
@@ -171,11 +167,38 @@ public class ArztMenu extends JFrame {
         });
     }
 
+    private void allePatienten() {
+        new Thread(() -> {
+            try {
+                PatientDAO patientDAO = new PatientDAO(connection);
+                AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
+                SwingUtilities.invokeLater(() -> fenster.setVisible(true));
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this,
+                                "Fehler beim Laden der Patienten: " + e.getMessage(),
+                                "Fehler", JOptionPane.ERROR_MESSAGE)
+                );
+            }
+        }).start();
+    }
+
     private void patientBearbeiten(){
-        SwingUtilities.invokeLater(() -> {
-            ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, new PatientDAO(connection));
-            arztPatientBearbeiten.setVisible(true);
-        });
+        new Thread(() -> {
+            try {
+                PatientDAO patientDAO = new PatientDAO(connection);
+                SwingUtilities.invokeLater(() -> {
+                    ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO);
+                    arztPatientBearbeiten.setVisible(true);
+                });
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this,
+                                "Fehler beim Bearbeiten des Patienten: " + e.getMessage(),
+                                "Fehler", JOptionPane.ERROR_MESSAGE)
+                );
+            }
+        }).start();
     }
 
     private void drucken(){
