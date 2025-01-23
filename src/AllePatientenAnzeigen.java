@@ -85,7 +85,9 @@ public class AllePatientenAnzeigen extends JFrame {
                 new PatientenLadenThread().start();
             }
         });
-        allePatientenButton.addActionListener(e -> {new PatientenLadenThread().start();
+        allePatientenButton.addActionListener(e -> {
+            suchenField.setText("");
+            new PatientenLadenThread().start();
         });
     }
 
