@@ -144,7 +144,6 @@ public class ArztPatientBearbeiten extends JFrame {
         persoenlicheDatenItem.addActionListener(e -> showPersoenlicheDaten());
         kontaktdatenItem.addActionListener(e -> showKontaktdaten());
         medikamenteNeuItem.addActionListener(e -> createDiagnosis());
-        //medikamenteLoeschenItem.addActionListener(e -> deleteDiagnosis());
         medikamenteAlleAnzeigenItem.addActionListener(e -> showAllDiagnosis());
     }
 
@@ -201,12 +200,12 @@ public class ArztPatientBearbeiten extends JFrame {
     }
 
     private void createDiagnosis() {
-
+        if (patient == null) {
+            JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        //new DiagnoseErstellen();
     }
-
-   /* private void deleteDiagnosis() {
-
-    }*/
 
     private void showAllDiagnosis() {
 
