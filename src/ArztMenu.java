@@ -25,7 +25,7 @@ public class ArztMenu extends JFrame {
     private JButton deleteButton;
     private JButton createButton;
     private JButton exitButton;
-    private JButton druckenButton;
+    //private JButton druckenButton;
     private JButton allButton;
     private JLabel date;
 
@@ -106,7 +106,7 @@ public class ArztMenu extends JFrame {
 
         toolBar.addSeparator();
 
-        druckenButton = new JButton();
+        /*druckenButton = new JButton();
         ImageIcon imageIcon5 = new ImageIcon("Icons/printer_6932375.png");
         Image image5 = imageIcon5.getImage();
         Image scaledImage5 = image5.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
@@ -116,7 +116,7 @@ public class ArztMenu extends JFrame {
         druckenButton.addActionListener(e -> drucken());
         toolBar.add(druckenButton);
 
-        toolBar.addSeparator();
+        toolBar.addSeparator();*/
 
         allButton = new JButton();
         ImageIcon imageIcon6 = new ImageIcon("Icons/menu_7699137.png");
@@ -187,8 +187,9 @@ public class ArztMenu extends JFrame {
         new Thread(() -> {
             try {
                 PatientDAO patientDAO = new PatientDAO(connection);
+                DiagnoseDAO diagnoseDAO = new DiagnoseDAO(connection);
                 SwingUtilities.invokeLater(() -> {
-                    ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO);
+                    ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO, diagnoseDAO);
                     arztPatientBearbeiten.setVisible(true);
                 });
             } catch (Exception e) {
@@ -201,7 +202,7 @@ public class ArztMenu extends JFrame {
         }).start();
     }
 
-    private void drucken(){
+    /*private void drucken(){
 
-    }
+    }*/
 }

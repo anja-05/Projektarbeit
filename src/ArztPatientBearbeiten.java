@@ -6,7 +6,8 @@ public class ArztPatientBearbeiten extends JFrame {
     private JMenuBar menuBar;
     private JMenu datenMenu, diagnoseMenu, fileMenu;
     private JMenuItem persoenlicheDatenItem, kontaktdatenItem;
-    private JMenuItem medikamenteNeuItem, /*medikamenteLoeschenItem, */medikamenteAlleAnzeigenItem;
+    private JMenuItem diagnoseNeuItem, /*medikamenteLoeschenItem, */
+            diagnoseAlleAnzeigenItem;
     private JMenuItem exitItem;
     private JLabel dateLabel;
 
@@ -27,11 +28,12 @@ public class ArztPatientBearbeiten extends JFrame {
 
     private ArztPersoenlicheDaten persoenlicheDatenFenster;
     private ArztKontaktdaten kontaktdatenFenster;
+    private DiagnoseDAO diagnoseDAO;
 
-    public ArztPatientBearbeiten(Connection connection, PatientDAO patientDAO) {
+    public ArztPatientBearbeiten(Connection connection, PatientDAO patientDAO, DiagnoseDAO diagnoseDAO) {
         this.connection = connection;
         this.patientDAO = patientDAO;
-        this.patient = new Patient(); // Platzhalter-Patient
+        this.patient = new Patient();
 
         initializeFrame();
         initializeMenuBar();
@@ -59,12 +61,12 @@ public class ArztPatientBearbeiten extends JFrame {
 
         // Menü für Medikamente
         diagnoseMenu = new JMenu("Diagnose");
-        medikamenteNeuItem = new JMenuItem("Neu erstellen");
+        diagnoseNeuItem = new JMenuItem("Neu erstellen");
         //medikamenteLoeschenItem = new JMenuItem("Löschen");
-        medikamenteAlleAnzeigenItem = new JMenuItem("Alle anzeigen");
-        diagnoseMenu.add(medikamenteNeuItem);
+        diagnoseAlleAnzeigenItem = new JMenuItem("Alle anzeigen");
+        diagnoseMenu.add(diagnoseNeuItem);
        // medikamenteMenu.add(medikamenteLoeschenItem);
-        diagnoseMenu.add(medikamenteAlleAnzeigenItem);
+        diagnoseMenu.add(diagnoseAlleAnzeigenItem);
 
         // Menü für File
         fileMenu = new JMenu("File");
@@ -78,7 +80,6 @@ public class ArztPatientBearbeiten extends JFrame {
 
         setJMenuBar(menuBar);
 
-        // Event Listener für die Menü-Items
         initializeMenuListeners();
     }
 
@@ -106,7 +107,7 @@ public class ArztPatientBearbeiten extends JFrame {
             Image scaledImage2 = image2.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
             ImageIcon scaledIcon2 = new ImageIcon(scaledImage2);
             createButton.setIcon(scaledIcon2);
-            createButton.setToolTipText("Neuen Patienten erstellen");
+            createButton.setToolTipText("Neue Diagnose erstellen");
             createButton.addActionListener(e -> createDiagnosis());
             toolBar.add(createButton);
 
@@ -143,19 +144,21 @@ public class ArztPatientBearbeiten extends JFrame {
     private void initializeMenuListeners() {
         persoenlicheDatenItem.addActionListener(e -> showPersoenlicheDaten());
         kontaktdatenItem.addActionListener(e -> showKontaktdaten());
-        medikamenteNeuItem.addActionListener(e -> createDiagnosis());
-        medikamenteAlleAnzeigenItem.addActionListener(e -> showAllDiagnosis());
+        diagnoseNeuItem.addActionListener(e -> createDiagnosis());
+        diagnoseAlleAnzeigenItem.addActionListener(e -> showAllDiagnosis());
     }
 
     private void promptForPatientId() {
         SwingUtilities.invokeLater(() -> {
             String patientenIdInput = JOptionPane.showInputDialog(this, "Bitte geben Sie die Patienten-ID ein:");
-            if (patientenIdInput == null || patientenIdInput.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Keine gültige ID eingegeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            if (patientenIdInput == null) {
+                //JOptionPane.showMessageDialog(this, "Keine gültige ID eingegeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
                 dispose();
                 return;
             }
-
+            if(patientenIdInput.trim().isEmpty()){
+                JOptionPane.showMessageDialog(this, "Keine gültige ID eingegeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            }
             try {
                 int patientId = Integer.parseInt(patientenIdInput);
                 patient = patientDAO.getPatientById(patientId);
@@ -204,7 +207,8 @@ public class ArztPatientBearbeiten extends JFrame {
             JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        //new DiagnoseErstellen();
+        DiagnoseErstellen diagnoseErstellenFenster = new DiagnoseErstellen(connection, new DiagnoseDAO(connection));
+        diagnoseErstellenFenster.setVisible(true);
     }
 
     private void showAllDiagnosis() {
