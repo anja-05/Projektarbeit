@@ -1,12 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class ArztPatientBearbeiten extends JFrame {
     private JMenuBar menuBar;
     private JMenu datenMenu, diagnoseMenu, fileMenu;
     private JMenuItem persoenlicheDatenItem, kontaktdatenItem;
-    private JMenuItem diagnoseNeuItem, /*medikamenteLoeschenItem, */
+    private JMenuItem diagnoseNeuItem, diagnoseBearbeitenItem,
             diagnoseAlleAnzeigenItem;
     private JMenuItem exitItem;
     private JLabel dateLabel;
@@ -62,12 +64,14 @@ public class ArztPatientBearbeiten extends JFrame {
         datenMenu.add(persoenlicheDatenItem);
         datenMenu.add(kontaktdatenItem);
 
-        // Menü für Medikamente
+        // Menü für Diagnosen
         diagnoseMenu = new JMenu("Diagnose");
         diagnoseNeuItem = new JMenuItem("Neu erstellen");
         //medikamenteLoeschenItem = new JMenuItem("Löschen");
+        diagnoseBearbeitenItem = new JMenuItem("Bearbeiten");
         diagnoseAlleAnzeigenItem = new JMenuItem("Alle anzeigen");
         diagnoseMenu.add(diagnoseNeuItem);
+        diagnoseMenu.add(diagnoseBearbeitenItem);
        // medikamenteMenu.add(medikamenteLoeschenItem);
         diagnoseMenu.add(diagnoseAlleAnzeigenItem);
 
@@ -114,6 +118,16 @@ public class ArztPatientBearbeiten extends JFrame {
             createButton.addActionListener(e -> createDiagnosis());
             toolBar.add(createButton);
 
+            editButton = new JButton();
+            ImageIcon imageIcon3 = new ImageIcon("Icons/pencil_5465509.png");
+            Image image3 = imageIcon3.getImage();
+            Image scaledImage3 = image3.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon3 = new ImageIcon(scaledImage3);
+            editButton.setIcon(scaledIcon3);
+            editButton.setToolTipText("Diagnose bearbeiten");
+            editButton.addActionListener(e -> editDiagnosis());
+            toolBar.add(editButton);
+
             toolBar.addSeparator();
 
             allButton = new JButton();
@@ -144,11 +158,17 @@ public class ArztPatientBearbeiten extends JFrame {
             return icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
     }
 
+    private boolean menuInitialized = false;
     private void initializeMenuListeners() {
+        if (menuInitialized) {
+            return; // Verhindert, dass die Methode mehrfach ausgeführt wird
+        }
         persoenlicheDatenItem.addActionListener(e -> showPersoenlicheDaten());
         kontaktdatenItem.addActionListener(e -> showKontaktdaten());
         diagnoseNeuItem.addActionListener(e -> createDiagnosis());
+        diagnoseBearbeitenItem.addActionListener(e -> editDiagnosis());
         diagnoseAlleAnzeigenItem.addActionListener(e -> showAllDiagnosis());
+        menuInitialized = true;
     }
 
     private void promptForPatientId() {
@@ -218,7 +238,55 @@ public class ArztPatientBearbeiten extends JFrame {
         } else {
             diagnoseErstellenFenster.toFront();
         }
+    }
 
+    private void editDiagnosis(){
+        if (patient == null) {
+            JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int patientId = patient.getPatientID();
+
+        // Abrufen aller Diagnosen für den ausgewählten Patienten
+        String diagnoseListQuery = "SELECT DiagnoseID, Diagnose FROM diagnose WHERE PatientenID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(diagnoseListQuery)) {
+            stmt.setInt(1, patientId);
+
+            ResultSet rs = stmt.executeQuery();
+            StringBuilder diagnoseOptions = new StringBuilder();
+            while (rs.next()) {
+                int diagnoseID = rs.getInt("DiagnoseID");
+                String diagnoseName = rs.getString("Diagnose");
+                diagnoseOptions.append(diagnoseID).append(": ").append(diagnoseName).append("\n");
+            }
+
+            if (diagnoseOptions.length() == 0) {
+                JOptionPane.showMessageDialog(this, "Keine Diagnosen für diesen Patienten gefunden.", "Information", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            // Dem Benutzer die Diagnosen anzeigen und Auswahl einholen
+            String diagnoseIDInput = JOptionPane.showInputDialog(this,
+                    "Bitte geben Sie die Diagnose-ID ein, die Sie bearbeiten möchten:\n\n" + diagnoseOptions.toString(),
+                    "Diagnose bearbeiten",
+                    JOptionPane.QUESTION_MESSAGE);
+
+            if (diagnoseIDInput == null || diagnoseIDInput.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Keine Diagnose-ID eingegeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                int diagnoseID = Integer.parseInt(diagnoseIDInput.trim());
+                DiagnoseBearbeiten diagnoseBearbeitenFenster = new DiagnoseBearbeiten(connection, diagnoseDAO, diagnoseID, patientId);
+                diagnoseBearbeitenFenster.setVisible(true);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Die eingegebene Diagnose-ID ist ungültig.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Diagnosen: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void showAllDiagnosis() {
