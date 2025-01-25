@@ -24,10 +24,12 @@ public class DiagnoseErstellen extends JFrame {
     private Connection connection;
     private DiagnoseDAO diagnoseDAO;
     private PatientDAO patientDAO;
+    private int patientenID;
 
-    public DiagnoseErstellen(Connection connection, DiagnoseDAO diagnoseDAO) {
+    public DiagnoseErstellen(Connection connection, DiagnoseDAO diagnoseDAO, int patientenID) {
         this.connection = connection;
         this.diagnoseDAO = diagnoseDAO;
+        this.patientenID = patientenID;
 
         initializeProperties();
         initializeButtonListeners();
@@ -193,26 +195,11 @@ public class DiagnoseErstellen extends JFrame {
             // Datum in java.sql.Date umwandeln
             java.sql.Date datum = java.sql.Date.valueOf(formattedDate); // yyyy-MM-dd Format erforderlich
 
-            int patientenID = 1;
+            int patientenID = this.patientenID;
             String icd = icdCode;
-            // ICD_ID anhand des ICD-Codes suchen
-            /*String sql = "SELECT ICD_ID FROM icddiagnose WHERE ICD = ?";
-            int icdID = -1;
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, icdCode);
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    icdID = rs.getInt("ICD_ID");
-                } else {
-                    JOptionPane.showMessageDialog(this, "Ungültiger ICD-Code!", "Fehler", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-            }
-            // PatientenID (Beispielhaft hier auf 1 gesetzt, dynamisch aus der GUI holen)
-            int patientenID = 1; // Anpassen, wenn PatientenID dynamisch ist
-*/
             // Diagnose speichern
             Diagnose neueDiagnose = new Diagnose(0, datum, beschreibung, patientenID, icd, diagnose);
+
             diagnoseDAO.addDiagnose(neueDiagnose);
 
             JOptionPane.showMessageDialog(this, "Diagnose erfolgreich gespeichert!");

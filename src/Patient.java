@@ -20,8 +20,8 @@ public class Patient {
     public Patient() {
     }
 
-    public Patient(int id, String anrede, String vorname, String nachname, Date geburtsdatum, int sozialversicherungsnummer, String versicherung, String strasse, int postleitzahl, String ort, String telefon, String mail, String bundesland) {
-        this.patientID = id;
+    public Patient(int patientenID, String anrede, String vorname, String nachname, Date geburtsdatum, int sozialversicherungsnummer, String versicherung, String strasse, int postleitzahl, String ort, String telefon, String mail, String bundesland) {
+        this.patientID = patientenID;
         this.anrede = anrede;
         this.vorname = vorname;
         this.nachname = nachname;
@@ -35,16 +35,6 @@ public class Patient {
         this.mail = mail;
         this.bundesland = bundesland;
     }
-/*
-    @Override
-    public String toString(){
-        return "Patient{" +
-                "id=" + id +
-                ", vorname=" + vorname + '\'' +
-                ", nachname=" + nachname + '\'' +
-                ", gebdatum=" + geburtsdatum +
-                '}';
-    }*/
 
     public int getPatientID() {
         return patientID;

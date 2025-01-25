@@ -30,6 +30,7 @@ public class ArztPatientBearbeiten extends JFrame {
     private ArztKontaktdaten kontaktdatenFenster;
     private DiagnoseDAO diagnoseDAO;
 
+
     public ArztPatientBearbeiten(Connection connection, PatientDAO patientDAO, DiagnoseDAO diagnoseDAO) {
         this.connection = connection;
         this.patientDAO = patientDAO;
@@ -207,7 +208,9 @@ public class ArztPatientBearbeiten extends JFrame {
             JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        DiagnoseErstellen diagnoseErstellenFenster = new DiagnoseErstellen(connection, new DiagnoseDAO(connection));
+
+        int patientenID = patient.getPatientID();
+        DiagnoseErstellen diagnoseErstellenFenster = new DiagnoseErstellen(connection, new DiagnoseDAO(connection), patientenID);
         diagnoseErstellenFenster.setVisible(true);
     }
 
