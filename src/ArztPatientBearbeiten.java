@@ -28,6 +28,8 @@ public class ArztPatientBearbeiten extends JFrame {
 
     private ArztPersoenlicheDaten persoenlicheDatenFenster;
     private ArztKontaktdaten kontaktdatenFenster;
+    private AlleDiagnosenAnzeigen alleDiagnosenFenster;
+    private DiagnoseErstellen diagnoseErstellenFenster;
     private DiagnoseDAO diagnoseDAO;
 
 
@@ -210,12 +212,22 @@ public class ArztPatientBearbeiten extends JFrame {
         }
 
         int patientenID = patient.getPatientID();
-        DiagnoseErstellen diagnoseErstellenFenster = new DiagnoseErstellen(connection, new DiagnoseDAO(connection), patientenID);
-        diagnoseErstellenFenster.setVisible(true);
+        if (diagnoseErstellenFenster == null || !diagnoseErstellenFenster.isVisible()) {
+            diagnoseErstellenFenster = new DiagnoseErstellen(connection, new DiagnoseDAO(connection), patientenID);
+            diagnoseErstellenFenster.setVisible(true);
+        } else {
+            diagnoseErstellenFenster.toFront();
+        }
+
     }
 
     private void showAllDiagnosis() {
-
+        if (alleDiagnosenFenster == null || !alleDiagnosenFenster.isVisible()) {
+            alleDiagnosenFenster = new AlleDiagnosenAnzeigen(connection, patient.getPatientID(), patient.getNachname(), patient.getVorname());
+            alleDiagnosenFenster.setVisible(true);
+        } else {
+            alleDiagnosenFenster.toFront();
+        }
     }
 }
 
