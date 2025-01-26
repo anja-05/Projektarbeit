@@ -6,10 +6,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
- * Zeigt alle Diagnosen eines bestimmten Patienten an.
- * Verwendet eine Verbindung zur Datenbank, um die Daten zu laden.
+ * Zeigt alle Diagnosen eines bestimmten Patienten in einer Tabelle an.
+ * Die Diagnosen werden aus der Datenbank über die DiagnoseDAO-Klasse abgerufen.
  */
 public class AlleDiagnosenAnzeigen extends JFrame {
 
@@ -19,16 +20,20 @@ public class AlleDiagnosenAnzeigen extends JFrame {
     private int patientenID;
     private String vorname;
     private String nachname;
+    private DiagnoseDAO diagnoseDAO;
 
     /**
-     * Konstruktor der Klasse
-     * @param connection Verbindung zur Datenbank
-     * @param patientenID ID des Patienten, zur Ausgabe der Diagnosen
-     * @param nachname Nachname des Patienten
-     * @param vorname Vorname des Patienten
+     * Konstruktor der Klasse.
+     *
+     * @param connection   Verbindung zur Datenbank.
+     * @param diagnoseDAO  Die DiagnoseDAO-Instanz zum Abrufen der Diagnosen.
+     * @param patientenID  Die ID des Patienten, für den die Diagnosen angezeigt werden sollen.
+     * @param nachname     Der Nachname des Patienten.
+     * @param vorname      Der Vorname des Patienten.
      */
-    public AlleDiagnosenAnzeigen(Connection connection, int patientenID, String nachname, String vorname) {
+    public AlleDiagnosenAnzeigen(Connection connection, DiagnoseDAO diagnoseDAO, int patientenID, String nachname, String vorname) {
         this.connection = connection;
+        this.diagnoseDAO = diagnoseDAO;
         this.patientenID = patientenID;
         this.nachname = nachname;
         this.vorname = vorname;
@@ -43,7 +48,7 @@ public class AlleDiagnosenAnzeigen extends JFrame {
     }
 
     /**
-     * Initialisiert die GUI-Komponenten
+     * Initialisiert die GUI-Komponenten, einschließlich der Tabelle und ihrer Kopfzeilen.
      */
     private void initializeComponents() {
         // Überschrift hinzufügen
@@ -71,27 +76,30 @@ public class AlleDiagnosenAnzeigen extends JFrame {
     }
 
     /**
-     * Lädt die Diagnosen des Patienten aus der Datenbank
+     * Lädt die Diagnosen des Patienten aus der Datenbank über DiagnoseDAO
+     * und fügt sie der Tabelle hinzu.
      */
     private void loadDiagnosen() {
-        String query = "SELECT DiagnoseID, Diagnose, ICD, Beschreibung, Datum FROM diagnose WHERE PatientenID = ?";
+        try {
+            // Diagnosen über DiagnoseDAO abrufen
+            List<Diagnose> diagnosen = diagnoseDAO.getDiagnoseByPatientId(patientenID);
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, patientenID);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Object[] row = new Object[5];
-                    row[0] = rs.getInt("DiagnoseID");
-                    row[1] = rs.getString("Diagnose");
-                    row[2] = rs.getString("ICD");
-                    row[3] = rs.getString("Beschreibung");
-                    row[4] = rs.getDate("Datum");
-                    tableModel.addRow(row);
-                }
+            for (Diagnose diagnose : diagnosen) {
+                // Erstelle eine Zeile aus den Diagnose-Werten
+                Object[] row = {
+                        diagnose.getDiagnoseID(),
+                        diagnose.getDiagnose(),
+                        diagnose.getIcd(),
+                        diagnose.getBeschreibung(),
+                        diagnose.getDatum()
+                };
+                tableModel.addRow(row); // Zeile zur Tabelle hinzufügen
             }
-        } catch (SQLException e) {
+
+        } catch (RuntimeException e) {
             JOptionPane.showMessageDialog(this, "Fehler beim Laden der Diagnosen: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
 }

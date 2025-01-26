@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Die Klasse DiagnoseErstellen stellt eine Benutzeroberfläche zum Erstellen einer neuen Diagnose für einen Patienten bereit.
@@ -114,6 +115,7 @@ public class DiagnoseErstellen extends JFrame {
         buttonPanel.add(abbrechenButton);
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
     }
+
     /**
      * Initialisiert die ActionListener für die Buttons und das Diagnose-Suchfeld.
      */
@@ -148,6 +150,7 @@ public class DiagnoseErstellen extends JFrame {
             }
         });
     }
+
     /**
      * Schließt das aktuelle Fenster und kehrt zum Arzt-Menü (ArztPatientBearbeiten) zurück.
      *
@@ -182,26 +185,16 @@ public class DiagnoseErstellen extends JFrame {
             return;
         }
 
-        String sql = "SELECT ICD, Diagnose FROM icddiagnose WHERE Diagnose LIKE ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, "%" + searchText + "%");
-            ResultSet rs = stmt.executeQuery();
+        // Aufruf von DiagnoseDAO
+        List<String> result = diagnoseDAO.searchDiagnose(searchText);
 
-            listModel.clear(); // Liste zurücksetzen
-            while (rs.next()) {
-                String icd = rs.getString("ICD");
-                String diagnose = rs.getString("Diagnose");
-                listModel.addElement(icd + ": " + diagnose); // ICD und Diagnose zusammen anzeigen
-            }
-            diagnoseList.setVisible(!listModel.isEmpty());
-            diagnoseList.revalidate();
-            diagnoseList.repaint();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Fehler bei der Diagnose-Suche: " + e.getMessage(),
-                    "Fehler", JOptionPane.ERROR_MESSAGE);
+        listModel.clear();
+        for (String entry : result) {
+            listModel.addElement(entry);
         }
+        diagnoseList.setVisible(!result.isEmpty());
     }
+
     /**
      * Speichert die eingegebene Diagnose in der Datenbank.
      *

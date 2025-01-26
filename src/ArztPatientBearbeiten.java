@@ -3,6 +3,7 @@ import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 
 /**
  * Die Klasse stellt eine Benutzeroberfläche zur Verwaltung eines einzelnen Patienten bereit.
@@ -49,6 +50,7 @@ public class ArztPatientBearbeiten extends JFrame {
     public ArztPatientBearbeiten(Connection connection, PatientDAO patientDAO, DiagnoseDAO diagnoseDAO) {
         this.connection = connection;
         this.patientDAO = patientDAO;
+        this.diagnoseDAO = diagnoseDAO;
         this.patient = new Patient();
 
         initializeFrame();
@@ -59,7 +61,7 @@ public class ArztPatientBearbeiten extends JFrame {
     }
 
     /**
-     * Initialisiert die Eigenschaften des Fensters wie Titel, Größe und Schließen-Verhalten
+     * Initialisiert die Eigenschaften des Fensters wie Titel, Größe und Schließverhalten
      */
     private void initializeFrame() {
         setTitle("Arzt - Patient Bearbeiten");
@@ -282,11 +284,11 @@ public class ArztPatientBearbeiten extends JFrame {
     }
 
     /**
-     * Listet alle Diagnosen für den jeweiligen Patienten mit DiagnoseID auf.
+     * Listet alle Diagnosen für den jeweiligen Patienten mit DiagnoseID auf
      * Fordert den Benutzer auf eine DiagnosenID auszuwählen
      * Öffnet ein Fenster zur Bearbeitung der Diagnose
       */
-    private void editDiagnosis(){
+    private void editDiagnosis() {
         if (patient == null) {
             JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return;
@@ -294,25 +296,24 @@ public class ArztPatientBearbeiten extends JFrame {
 
         int patientId = patient.getPatientID();
 
-        // Abrufen aller Diagnosen für den ausgewählten Patienten
-        String diagnoseListQuery = "SELECT DiagnoseID, Diagnose FROM diagnose WHERE PatientenID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(diagnoseListQuery)) {
-            stmt.setInt(1, patientId);
+        try {
+            // Abrufen aller Diagnosen für den ausgewählten Patienten
+            List<Diagnose> diagnoseList = diagnoseDAO.getDiagnoseByPatientId(patientId);
 
-            ResultSet rs = stmt.executeQuery();
-            StringBuilder diagnoseOptions = new StringBuilder();
-            while (rs.next()) {
-                int diagnoseID = rs.getInt("DiagnoseID");
-                String diagnoseName = rs.getString("Diagnose");
-                diagnoseOptions.append(diagnoseID).append(": ").append(diagnoseName).append("\n");
-            }
-
-            if (diagnoseOptions.length() == 0) {
+            if (diagnoseList.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Keine Diagnosen für diesen Patienten gefunden.", "Information", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
-            // Dem Benutzer die Diagnosen anzeigen und Auswahl einholen
+            // Diagnosen als Auswahl anzeigen
+            StringBuilder diagnoseOptions = new StringBuilder();
+            for (Diagnose diagnose : diagnoseList) {
+                diagnoseOptions.append(diagnose.getDiagnoseID())
+                        .append(": ")
+                        .append(diagnose.getDiagnose())
+                        .append("\n");
+            }
+
             String diagnoseIDInput = JOptionPane.showInputDialog(this,
                     "Bitte geben Sie die Diagnose-ID ein, die Sie bearbeiten möchten:\n\n" + diagnoseOptions.toString(),
                     "Diagnose bearbeiten",
@@ -323,24 +324,34 @@ public class ArztPatientBearbeiten extends JFrame {
                 return;
             }
 
-            try {
-                int diagnoseID = Integer.parseInt(diagnoseIDInput.trim());
-                DiagnoseBearbeiten diagnoseBearbeitenFenster = new DiagnoseBearbeiten(connection, diagnoseDAO, diagnoseID, patientId);
-                diagnoseBearbeitenFenster.setVisible(true);
-            } catch (NumberFormatException ex) {
+            // Validierung der eingegebenen Diagnose-ID
+            int diagnoseID = Integer.parseInt(diagnoseIDInput.trim());
+
+            boolean validDiagnoseID = diagnoseList.stream()
+                    .anyMatch(diagnose -> diagnose.getDiagnoseID() == diagnoseID);
+
+            if (!validDiagnoseID) {
                 JOptionPane.showMessageDialog(this, "Die eingegebene Diagnose-ID ist ungültig.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
+            // Öffne das Fenster zur Bearbeitung der Diagnose
+            DiagnoseBearbeiten diagnoseBearbeitenFenster = new DiagnoseBearbeiten(connection, diagnoseDAO, diagnoseID, patientId);
+            diagnoseBearbeitenFenster.setVisible(true);
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Die eingegebene Diagnose-ID ist ungültig.", "Fehler", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Diagnosen: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     /**
-     * Zeigt ein Fenster mit allen Diagnosen des Patienten an.
+     * Zeigt ein Fenster an, das alle Diagnosen des aktuell ausgewählten Patienten anzeigt.
      */
     private void showAllDiagnosis() {
         if (alleDiagnosenFenster == null || !alleDiagnosenFenster.isVisible()) {
-            alleDiagnosenFenster = new AlleDiagnosenAnzeigen(connection, patient.getPatientID(), patient.getNachname(), patient.getVorname());
+            alleDiagnosenFenster = new AlleDiagnosenAnzeigen(connection, diagnoseDAO, patient.getPatientID(), patient.getNachname(), patient.getVorname());
             alleDiagnosenFenster.setVisible(true);
         } else {
             alleDiagnosenFenster.toFront();
