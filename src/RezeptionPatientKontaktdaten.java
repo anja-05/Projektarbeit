@@ -139,6 +139,7 @@ public class RezeptionPatientKontaktdaten extends JFrame {
      *
      * @param actionEvent ausgelöstetes actionEvent
      */
+
     private void speichernPerformed(ActionEvent actionEvent) {
         new Thread(new SavePatientTask()).start();
     }
@@ -146,6 +147,7 @@ public class RezeptionPatientKontaktdaten extends JFrame {
     /**
      * Runnable-Implementierung für das Speichern der Patientendaten
      */
+
     private class SavePatientTask implements Runnable {
         @Override
         public void run() {
@@ -189,6 +191,7 @@ public class RezeptionPatientKontaktdaten extends JFrame {
      * Zeigt Fehlermeldung in einem Dialog an
      * @param message Fehlermeldung
      */
+
     private void showErrorDialog(String message) {
         SwingUtilities.invokeLater(() ->
                 JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE)

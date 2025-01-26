@@ -127,6 +127,7 @@ public class RezeptionPatientErstellen extends JFrame {
         return true;
     }
 
+
     /**
      * Zeigt eine Fehlermeldung in einem Dialog an
      * @param message jeweilige Fehlermeldung, die angezeogt werden soll
@@ -134,6 +135,7 @@ public class RezeptionPatientErstellen extends JFrame {
     private void showErrorDialog(String message) {
         JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE);
     }
+
 
     /**
      * Setzt die Felder im Formular basierend auf den Patientendaten
@@ -158,6 +160,7 @@ public class RezeptionPatientErstellen extends JFrame {
             resetFields();
         }
     }
+
 
     /**
      * Setzt alle Felder im Fenster persönliche Daten wieder zurück
