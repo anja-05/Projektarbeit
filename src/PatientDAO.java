@@ -7,14 +7,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
-
+/**
+ * Die Klasse PatientDAO dient als Datenzugriffsschicht für die Verwaltung von Patientendaten in einer Datenbank.
+ * Sie bietet Methoden zum Speichern, Abrufen, Aktualisieren und Löschen von Patientendatensätzen.
+ */
 public class PatientDAO {
     private final Connection connection;
 
+    /**
+     * Konstruktor, der eine neue Instanz von PatientDAO erstellt.
+     *
+     * @param connection Die Datenbankverbindung.
+     */
     public PatientDAO(Connection connection){
         this.connection = connection;
     }
 
+    /**
+     * Gibt die ID eines Bundeslands basierend auf seiner Bezeichnung zurück.
+     *
+     * @param bundesland Der Name des Bundeslands.
+     * @return Die ID des Bundeslands.
+     * @throws SQLException Wenn ein Datenbankfehler auftritt.
+     */
     public int getBundeslandID(String bundesland) throws SQLException {
         String query = "SELECT bundeslandID FROM bundesland WHERE bezeichnung = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -27,6 +42,13 @@ public class PatientDAO {
         return -1;
     }
 
+    /**
+     * Gibt die ID einer Krankenversicherung basierend auf ihrer Bezeichnung zurück.
+     *
+     * @param versicherung Der Name der Versicherung.
+     * @return Die ID der Versicherung.
+     * @throws SQLException Wenn ein Datenbankfehler auftritt.
+     */
     public int getKrankenkassenID(String versicherung) throws SQLException {
         String query = "SELECT krankenkassenID FROM krankenkasse WHERE bezeichnung = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -39,10 +61,21 @@ public class PatientDAO {
         throw new IllegalArgumentException("Ungültige Krankenkasse: " + versicherung);
     }
 
+    /**
+     * Gibt die Datenbankverbindung zurück.
+     *
+     * @return Die aktuelle Verbindung.
+     */
     public Connection getConnection() {
         return connection;
     }
 
+    /**
+     * Speichert einen neuen Patienten in der Datenbank.
+     *
+     * @param patient Das zu speichernde Patient-Objekt.
+     * @return true, wenn das Speichern erfolgreich war; false, andernfalls.
+     */
     public boolean savePatient(Patient patient) {
         String query = "INSERT INTO patient (anrede, vorname, nachname, geburtsdatum, sozialversicherungsnummer, strasse, postleitzahl, ort, telefon, mail, bundeslandID, krankenkassenID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -79,6 +112,12 @@ public class PatientDAO {
         }
     }
 
+    /**
+     * Gibt eine Liste aller Patienten aus der Datenbank zurück.
+     *
+     * @return Eine Liste aller Patienten.
+     * @throws SQLException Wenn ein Datenbankfehler auftritt.
+     */
     public List<Patient> getAllePatienten() throws SQLException {
         String query =
                 "SELECT p.patientenID, p.anrede, p.vorname, p.nachname, p.geburtsdatum, p.sozialversicherungsnummer, " +
@@ -112,6 +151,13 @@ public class PatientDAO {
         }
     }
 
+    /**
+     * Sucht Patienten basierend auf einem regulären Ausdruck.
+     *
+     * @param regex Der reguläre Ausdruck zur Suche.
+     * @return Eine Liste der Patienten, die den regulären Ausdruck erfüllen.
+     * @throws SQLException Wenn ein Datenbankfehler auftritt.
+     */
     public List<Patient> suchePatientenMitRegex(String regex) throws SQLException {
         List<Patient> allePatienten = getAllePatienten();
         List<Patient> gefiltertePatienten = new ArrayList<>();
@@ -125,6 +171,16 @@ public class PatientDAO {
         return gefiltertePatienten;
     }
 
+    /**
+     * Prüft, ob ein Patient einem regulären Ausdruck entspricht.
+     *
+     * Diese Methode durchsucht alle relevanten Felder des Patient-Objekts und überprüft, ob sie mit dem angegebenen
+     * regulären Ausdruck übereinstimmen.
+     *
+     * @param patient Das Patient-Objekt, das überprüft werden soll.
+     * @param pattern Der reguläre Ausdruck, der für die Übereinstimmungsprüfung verwendet wird.
+     * @return true, wenn eines der Felder des Patienten mit dem regulären Ausdruck übereinstimmt; false andernfalls.
+     */
     private boolean matchesPatientWithRegex(Patient patient, Pattern pattern) {
         return pattern.matcher(String.valueOf(patient.getPatientID())).find() ||
                 pattern.matcher(patient.getAnrede() != null ? patient.getAnrede() : "").find() ||
@@ -141,6 +197,12 @@ public class PatientDAO {
                 pattern.matcher(patient.getBundesland() != null ? patient.getBundesland() : "").find();
     }
 
+    /**
+     * Gibt die Daten eines Patienten basierend auf der Patienten-ID zurück.
+     *
+     * @param patientenID Die ID des Patienten.
+     * @return Eine formatierte Zeichenkette mit den Patientendetails.
+     */
     public String getPatientDetails(int patientenID) {
         String query = """
         SELECT patient.PatientenID, patient.Anrede, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
@@ -198,6 +260,13 @@ public class PatientDAO {
         }
     }
 
+    /**
+     * Löscht einen Patienten basierend auf der Patienten-ID aus der Datenbank.
+     *
+     * @param patientenID Die ID des Patienten, der gelöscht werden soll.
+     * @return true, wenn ein Datensatz erfolgreich gelöscht wurde; false, wenn kein Datensatz betroffen war.
+     * @throws SQLException Wenn ein Fehler bei der Ausführung der SQL-Anweisung auftritt.
+     */
     public boolean deletePatient(int patientenID) throws SQLException {
         String deleteSQL = "DELETE FROM patient WHERE PatientenID = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
@@ -207,6 +276,12 @@ public class PatientDAO {
         }
     }
 
+    /**
+     * Ruft einen Patienten basierend auf seiner ID aus der Datenbank ab.
+     *
+     * @param patientenID Die ID des Patienten.
+     * @return Ein Patient-Objekt mit den abgerufenen Daten, oder null, wenn kein Patient gefunden wurde.
+     */
     public Patient getPatientById(int patientenID)  {
         String query = """
         SELECT patient.PatientenID, patient.Anrede, patient.Vorname, patient.Nachname, patient.Geburtsdatum,
@@ -247,6 +322,12 @@ public class PatientDAO {
         return null;
     }
 
+    /**
+     * Aktualisiert die Daten eines Patienten in der Datenbank.
+     *
+     * @param patient Das Patient-Objekt mit den aktualisierten Daten.
+     * @return true, wenn die Aktualisierung erfolgreich war; false, andernfalls.
+     */
     public boolean updatePatient(Patient patient) {
         String query = """
         UPDATE patient 
@@ -275,6 +356,12 @@ public class PatientDAO {
         return false;
     }
 
+    /**
+     * Aktualisiert die persönlichen Daten eines Patienten in der Datenbank.
+     *
+     * @param patient Das Patient-Objekt mit den zu aktualisierenden persönlichen Daten.
+     * @return true, wenn die Aktualisierung erfolgreich war; false, andernfalls.
+     */
     public boolean updatePersoenlicheDaten(Patient patient) {
         String query = """
         UPDATE patient 
@@ -296,6 +383,12 @@ public class PatientDAO {
         return false;
     }
 
+    /**
+     * Aktualisiert die Kontaktdaten eines Patienten in der Datenbank.
+     *
+     * @param patient Das Patient-Objekt mit den zu aktualisierenden Kontaktdaten.
+     * @return true, wenn die Aktualisierung erfolgreich war; false, andernfalls.
+     */
     public boolean updateKontaktdaten(Patient patient) {
         String query = """
         UPDATE patient 

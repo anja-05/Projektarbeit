@@ -1,6 +1,11 @@
 import javax.swing.*;
 import java.sql.*;
 
+/**
+ * Die Main-Klasse ist der Einstiegspunkt für die Anwendung.
+ * Sie stellt die Verbindung zur Datenbank her und verwaltet die Benutzeroberflächen
+ * für den Login, das Arzt-Menü und das Rezeption-Menü.
+ */
 public class Main {
     private static final String URL = "jdbc:mysql://localhost:3306/datenbank_patienten";
     private static final String USER = "root";
@@ -12,10 +17,22 @@ public class Main {
     private Connection connection;
     private PatientDAO patientDAO;
 
+    /**
+     * Konstruktor
+     *
+     * @param connection Die Datenbankverbindung, die für die Anwendung verwendet wird.
+     */
     public Main(Connection connection) {
         this.connection = connection;
     }
 
+    /**
+     * Der Einstiegspunkt der Anwendung.
+     * Verbindet sich mit der Datenbank, registriert einen Shutdown-Hook und zeigt die Login-Oberfläche an.
+     *
+     * @param args Die Kommandozeilenargumente.
+     * @throws SQLException Wenn ein Fehler beim Arbeiten mit der Datenbank auftritt.
+     */
     public static void main(String[] args) throws SQLException {
         Connection connection = null;
         try {
@@ -47,6 +64,10 @@ public class Main {
 
     }
 
+    /**
+     * Zeigt die Login-Oberfläche an.
+     * Erstellt die Login-GUI, falls sie noch nicht existiert, und setzt sie sichtbar.
+     */
     public void showLogin() {
         if (loginGUI == null) {
             loginGUI = new Login(this);
@@ -54,6 +75,11 @@ public class Main {
         loginGUI.setVisible(true);
     }
 
+    /**
+     * Zeigt die Benutzeroberfläche für Ärzte an.
+     * Erstellt das Arzt-Menü, falls es noch nicht existiert, und setzt es sichtbar.
+     * Schließt die Login-Oberfläche, falls sie geöffnet ist.
+     */
     public void showArztMenu() {
         if (arztMenuGUI == null) {
             arztMenuGUI = new ArztMenu(connection);
@@ -64,6 +90,11 @@ public class Main {
         }
     }
 
+    /**
+     * Zeigt die Benutzeroberfläche für die Rezeption an.
+     * Erstellt das Rezeption-Menü, falls es noch nicht existiert, und setzt es sichtbar.
+     * Schließt die Login-Oberfläche, falls sie geöffnet ist.
+     */
     public void showRezeptionMenu() {
         if (rezeptionMenuGUI == null) {
             patientDAO = new PatientDAO(connection);

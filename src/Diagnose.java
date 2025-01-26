@@ -1,5 +1,8 @@
 import java.sql.Date;
-
+/**
+ * Die Klasse repräsentiert eine Diagnose für einen Patienten.
+ * Sie enthält alle relevanten Informationen zur Diagnose.
+ */
 public class Diagnose {
     private int diagnoseID;
     private Date datum;
@@ -8,6 +11,16 @@ public class Diagnose {
     private String icd;
     private String diagnose;
 
+    /**
+     * Konstruktor, der eine neue Diagnose mit den angegebenen Parametern erstellt.
+     *
+     * @param diagnoseID   Die eindeutige ID der Diagnose.
+     * @param datum        Das Datum der Diagnose.
+     * @param beschreibung Die Beschreibung der Diagnose (optional).
+     * @param patientenID  Die ID des Patienten, dem die Diagnose zugeordnet ist.
+     * @param icd          Der ICD-Code der Diagnose.
+     * @param diagnose     Der Name oder die Bezeichnung der Diagnose.
+     */
     public Diagnose(int diagnoseID, Date datum, String beschreibung, int patientenID, String icd, String diagnose) {
         this.diagnoseID = diagnoseID;
         this.datum = datum;

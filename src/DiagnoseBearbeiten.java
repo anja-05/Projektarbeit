@@ -9,7 +9,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
+/**
+ * Die Klasse stellt eine Benutzeroberfläche zum Bearbeiten einer bestehenden Diagnose bereit.
+ * Benutzer können die Felder bearbeiten und die Änderungen in der Datenbank speichern.
+ */
 public class DiagnoseBearbeiten extends JFrame {
     private JPanel contentPane;
     private JTextField icdTextField;
@@ -25,6 +30,14 @@ public class DiagnoseBearbeiten extends JFrame {
     private DiagnoseDAO diagnoseDAO;
     private int diagnoseID;
 
+    /**
+     * Konstruktor, der das Fenster zum Bearbeiten einer Diagnose erstellt.
+     *
+     * @param connection   Die Datenbankverbindung.
+     * @param diagnoseDAO  Das DAO-Objekt, das Datenbankoperationen für Diagnosen unterstützt.
+     * @param diagnoseID   Die ID der Diagnose, die bearbeitet werden soll.
+     * @param patientenID  Die ID des zugehörigen Patienten.
+     */
     public DiagnoseBearbeiten(Connection connection, DiagnoseDAO diagnoseDAO, int diagnoseID, int patientenID) {
         this.connection = connection;
         this.diagnoseDAO = diagnoseDAO;
@@ -35,6 +48,9 @@ public class DiagnoseBearbeiten extends JFrame {
         initializeButtonListeners();
     }
 
+    /**
+     * Initialisiert die Eigenschaften des Fensters wie Titel, Größe und Layout.
+     */
     private void initializeProperties() {
         setTitle("Diagnose bearbeiten");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -101,23 +117,24 @@ public class DiagnoseBearbeiten extends JFrame {
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Lädt die Daten der Diagnose basierend auf der Diagnose-ID aus der Datenbank.
+     */
     private void loadDiagnoseData() {
-        String query = "SELECT Diagnose, ICD, Beschreibung, Datum FROM diagnose WHERE DiagnoseID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, diagnoseID);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    diagnoseTextField.setText(rs.getString("Diagnose"));
-                    icdTextField.setText(rs.getString("ICD"));
-                    beschreibungTextArea.setText(rs.getString("Beschreibung"));
-                    datumTextField.setText(rs.getDate("Datum").toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-                }
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Laden der Diagnose: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+        Diagnose diagnose = diagnoseDAO.getDiagnoseById(diagnoseID);
+        if (diagnose != null) {
+            diagnoseTextField.setText(diagnose.getDiagnose());
+            icdTextField.setText(diagnose.getIcd());
+            beschreibungTextArea.setText(diagnose.getBeschreibung());
+            datumTextField.setText(diagnose.getDatum().toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+        } else {
+            JOptionPane.showMessageDialog(this, "Keine Diagnose gefunden!", "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    /**
+     * Initialisiert die Listener für die Butons und das Diagnose-Suchfeld.
+     */
     private void initializeButtonListeners() {
         speichernButton.addActionListener(this::savePerformed);
         abbrechenButton.addActionListener(e -> dispose());
@@ -149,7 +166,11 @@ public class DiagnoseBearbeiten extends JFrame {
             }
         });
     }
-
+    /**
+     * Führt eine Diagnose-Suche basierend auf dem eingegebenen Text durch.
+     * Durchsucht dabei die Datenbank und listet die ICD Codes und Diagnosen auf
+     * @param searchText Der Suchtext für die Diagnose.
+     */
     private void searchDiagnose(String searchText) {
         if (searchText.isEmpty()) {
             listModel.clear();
@@ -157,27 +178,24 @@ public class DiagnoseBearbeiten extends JFrame {
             return;
         }
 
-        String sql = "SELECT ICD, Diagnose FROM icddiagnose WHERE Diagnose LIKE ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, "%" + searchText + "%");
-            ResultSet rs = stmt.executeQuery();
+        // Aufruf der DiagnoseDAO-Methode
+        List<String> result = diagnoseDAO.searchDiagnose(searchText);
 
-            listModel.clear();
-            while (rs.next()) {
-                String icd = rs.getString("ICD");
-                String diagnose = rs.getString("Diagnose");
-                listModel.addElement(icd + ": " + diagnose);
-            }
-            diagnoseList.setVisible(!listModel.isEmpty());
-            diagnoseList.revalidate();
-            diagnoseList.repaint();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Fehler bei der Diagnose-Suche: " + e.getMessage(),
-                    "Fehler", JOptionPane.ERROR_MESSAGE);
+        listModel.clear();
+        for (String entry : result) {
+            listModel.addElement(entry);
         }
+
+        diagnoseList.setVisible(!result.isEmpty());
+        diagnoseList.revalidate();
+        diagnoseList.repaint();
     }
 
+    /**
+     * Speichert die bearbeiteten Diagnose-Daten in der Datenbank.
+     *
+     * @param actionEvent Das ActionEvent, das durch das Drücken des "Speichern"-Buttons ausgelöst wurde.
+     */
     private void savePerformed(ActionEvent actionEvent) {
         String datumText = datumTextField.getText().trim();
         String icdCode = icdTextField.getText().trim();
@@ -185,28 +203,23 @@ public class DiagnoseBearbeiten extends JFrame {
         String beschreibung = beschreibungTextArea.getText().trim();
 
         if (datumText.isEmpty() || icdCode.isEmpty() || diagnose.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Bitte alle Pflichtfelder ausfüllen (Datum, ICD-Code, Diagnose)!");
+            JOptionPane.showMessageDialog(this, "Bitte alle Pflichtfelder ausfüllen (Datum, ICD-Code, Diagnose)!", "Fehler", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
-            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String formattedDate = LocalDate.parse(datumText, inputFormatter).format(outputFormatter);
-            java.sql.Date datum = java.sql.Date.valueOf(formattedDate);
+            // Datum formatieren
+            LocalDate datum = LocalDate.parse(datumText, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+            java.sql.Date sqlDatum = java.sql.Date.valueOf(datum);
 
-            String query = "UPDATE diagnose SET Diagnose = ?, ICD = ?, Beschreibung = ?, Datum = ? WHERE DiagnoseID = ?";
-            try (PreparedStatement stmt = connection.prepareStatement(query)) {
-                stmt.setString(1, diagnose);
-                stmt.setString(2, icdCode);
-                stmt.setString(3, beschreibung);
-                stmt.setDate(4, datum);
-                stmt.setInt(5, diagnoseID);
+            // Diagnose-Objekt mit neuen Daten erstellen
+            Diagnose updatedDiagnose = new Diagnose(diagnoseID, sqlDatum, beschreibung, 0, icdCode, diagnose);
 
-                stmt.executeUpdate();
-                JOptionPane.showMessageDialog(this, "Diagnose erfolgreich gespeichert!");
-                dispose(); // Fenster schließen
-            }
+            // Änderungen speichern
+            diagnoseDAO.updateDiagnose(updatedDiagnose);
+
+            JOptionPane.showMessageDialog(this, "Diagnose erfolgreich gespeichert!");
+            dispose();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Fehler beim Speichern der Diagnose: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
         }

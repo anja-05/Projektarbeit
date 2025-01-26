@@ -6,7 +6,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Diese Klasse stellt das Hauptmenü für Ärzte dar.
+ * Sie bietet verschiedene Optionen wie das Anzeigen aller Patienten, Bearbeiten von Patienten und den Zugriff auf Diagnosen.
+ */
 public class ArztMenu extends JFrame {
     private JPanel contentPane;
     //Bausteine für MenuBar
@@ -32,7 +35,10 @@ public class ArztMenu extends JFrame {
 
     private static Connection connection;
 
-
+    /**
+     * Konstruktor der Klasse
+     * @param connection Verbindung zur Datenbank
+     */
     public ArztMenu(Connection connection) {
         this.connection = connection;
         initializePropertiesMenu();
@@ -42,7 +48,9 @@ public class ArztMenu extends JFrame {
         initializeContentPane();
     }
 
-
+    /**
+     * Initialisiert die Eigenschaften des Menüs
+     */
     private void initializePropertiesMenu() {
         setTitle("Patienten DB");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -50,7 +58,9 @@ public class ArztMenu extends JFrame {
         setLocationRelativeTo(null);
     }
 
-
+    /**
+     * Erstellt und initialisiert die Menüleiste
+     */
     public void initializeMenu(){
         MenuBar= new JMenuBar();
 
@@ -77,6 +87,9 @@ public class ArztMenu extends JFrame {
         setJMenuBar(MenuBar);
     }
 
+    /**
+     * Initialisiert die Toolbar mit den Buttons und zugehörigen Aktionen
+     */
     private void initializeToolBar(){
         toolBar = new JToolBar();
         toolBar.setFloatable(false);
@@ -134,16 +147,27 @@ public class ArztMenu extends JFrame {
         add(toolBar, BorderLayout.NORTH);
     }
 
+    /**
+     * Initialisiert das Hauptinhaltspanel
+     */
     private void initializeContentPane(){
         contentPane = new JPanel(new CardLayout());
         add(contentPane, BorderLayout.CENTER);
     }
 
+    /**
+     * Selektiert ein Bild mit einem fixen Maßstab
+     * @param path Der Pfad zur Bilddatei
+     * @return Das skalierte Bild
+     */
     private Image scaleIcon(String path){
         ImageIcon icon = new ImageIcon(path);
         return icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
     }
 
+    /**
+     * Initialisiert die Button Listener
+     */
     private void initializeButtonListeners() {
         exitItem.addActionListener(e -> System.exit(0));
         editItem.addActionListener(e -> patientBearbeiten());
@@ -159,6 +183,9 @@ public class ArztMenu extends JFrame {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * Zeigt ein neues Fenster mit einer Liste aller Patienten an
+     */
     private void allePatienten() {
         new Thread(() -> {
             try {
@@ -175,6 +202,9 @@ public class ArztMenu extends JFrame {
         }).start();
     }
 
+    /**
+     * Öffnet ein Fenster zum Bearbeiten eines Patienten (Persönliche Daten und Kontaktdaten) und zum Erstellen und Bearbeiten von Diagnosen
+     */
     private void patientBearbeiten(){
         new Thread(() -> {
             try {

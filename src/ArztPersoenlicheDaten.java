@@ -1,7 +1,12 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-
-
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+/**
+ * Die Klasse stellt ein GUI-Fenster zur Bearbeitung der persönlichen Daten eines Patienten bereit.
+ * Benutzer können Änderungen vornehmen und die aktualisierten Daten speichern oder die Bearbeitung abbrechen.
+ */
 public class ArztPersoenlicheDaten extends JFrame {
 
     private JPanel contentPane;
@@ -17,7 +22,12 @@ public class ArztPersoenlicheDaten extends JFrame {
     private PatientDAO patientDAO;
     private Patient patient;
 
-
+    /**
+     * Konstruktor, der das Fenster zur Bearbeitung der persönlichen Daten eines Patienten erstellt.
+     *
+     * @param patient    Das Patient-Objekt, dessen persönliche Daten bearbeitet werden sollen.
+     * @param patientDAO Das DAO-Objekt, das die Datenbankoperationen für Patienten unterstützt.
+     */
     public ArztPersoenlicheDaten(Patient patient, PatientDAO patientDAO) {
         this.patient = patient;
         this.patientDAO = patientDAO;
@@ -28,92 +38,87 @@ public class ArztPersoenlicheDaten extends JFrame {
         loadPatientData();
     }
 
-
+    /**
+     * Initialisiert die Eigenschaften des Fensters, wie Titel, Größe und Schließen-Verhalten.
+     */
     private void initializeProperties() {
         setTitle("Persönliche Daten bearbeiten");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(400, 300);
         setLocationRelativeTo(null);
     }
-
-
+    /**
+     * Initialisiert das GUI-Layout und setzt das Hauptinhaltspanel.
+     */
     private void initializeView() {
         setContentPane(contentPane);
         pack();
     }
-
-
+    /**
+     * Initialisiert die ActionListener für die Buttons "Speichern" und "Abbrechen".
+     */
     private void initializeButtonListerners() {
         speichernButton.addActionListener(this::saveChanges);
         abbrechenButton.addActionListener(e -> dispose());
     }
-
-
+    /**
+     * Lädt die aktuellen persönlichen Daten des Patienten in die Eingabefelder.
+     */
     private void loadPatientData() {
-        try {
-            anredeComboBox.setSelectedItem(patient.getAnrede());
-            vornameTextField.setText(patient.getVorname());
-            nachnameTextField.setText(patient.getNachname());
-            geburtsdatumTextField.setText(patient.getGeburtsdatum().toString());
-            svnTextField.setText(String.valueOf(patient.getSozialversicherungsnummer()));
-            versicherungComboBox.setSelectedItem(patient.getVersicherung());
-        } catch(Exception ex) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Laden der Patientendaten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
+        anredeComboBox.setSelectedItem(patient.getAnrede());
+        vornameTextField.setText(patient.getVorname());
+        nachnameTextField.setText(patient.getNachname());
+        geburtsdatumTextField.setText(patient.getGeburtsdatum().toString());
+        svnTextField.setText(String.valueOf(patient.getSozialversicherungsnummer()));
+        versicherungComboBox.setSelectedItem(patient.getVersicherung());
     }
-
-
+    /**
+     * Validiert die Eingabefelder und speichert die Änderungen an den persönlichen Daten des Patienten.
+     *
+     * @param e Das ActionEvent, das durch das Drücken der "Speichern"-Schaltfläche ausgelöst wurde.
+     */
     private void saveChanges(ActionEvent e) {
         if (validateFields()) {
-            new Thread(new SavePatientTask()).start();
+            new Thread(() -> {
+                try {
+                    // Patient-Daten aktualisieren
+                    patient.setAnrede((String) anredeComboBox.getSelectedItem());
+                    patient.setVorname(vornameTextField.getText());
+                    patient.setNachname(nachnameTextField.getText());
+                    patient.setGeburtsdatum(java.sql.Date.valueOf(geburtsdatumTextField.getText()));
+                    patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
+                    patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
+
+                    // Daten speichern
+                    boolean success = patientDAO.updatePersoenlicheDaten(patient);
+                    SwingUtilities.invokeLater(() -> {
+                        if (success) {
+                            JOptionPane.showMessageDialog(this, "Daten erfolgreich gespeichert.");
+                            dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Fehler beim Speichern.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(this, "Ungültige Eingabe: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE)
+                );
+                }
+            }).start();
         }
     }
-
-
+    /**
+     * Validiert die Eingabefelder, um sicherzustellen, dass keine erforderlichen Felder leer sind.
+     *
+     * @return true, wenn alle Felder gültig sind; false, wenn ein Feld ungültig ist.
+     */
     private boolean validateFields() {
         if (anredeComboBox.getSelectedItem() == null || vornameTextField.getText().isEmpty()
                 || nachnameTextField.getText().isEmpty() || geburtsdatumTextField.getText().isEmpty()
                 || svnTextField.getText().isEmpty() || versicherungComboBox.getSelectedItem() == null) {
-            showErrorDialog("Bitte füllen Sie alle Pflichtfelder aus.");
+            JOptionPane.showMessageDialog(this, "Bitte füllen Sie alle Pflichtfelder aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
-    }
-
-
-    private void showErrorDialog(String message) {
-        JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE);
-    }
-
-    /**
-     * Runnable-Implementierung für das Speichern der Patientendaten
-     */
-    private class SavePatientTask implements Runnable {
-        @Override
-        public void run() {
-            try {
-                patient.setAnrede((String) anredeComboBox.getSelectedItem());
-                patient.setVorname(vornameTextField.getText());
-                patient.setNachname(nachnameTextField.getText());
-                patient.setGeburtsdatum(java.sql.Date.valueOf(geburtsdatumTextField.getText()));
-                patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
-                patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
-
-                boolean success = patientDAO.updatePersoenlicheDaten(patient);
-
-                SwingUtilities.invokeLater(() -> {
-                    if (success) {
-                        JOptionPane.showMessageDialog(ArztPersoenlicheDaten.this, "Daten erfolgreich gespeichert.");
-                        dispose();
-                    } else {
-                        showErrorDialog("Fehler beim Speichern.");
-                    }
-                });
-            } catch (IllegalArgumentException ex) {
-                SwingUtilities.invokeLater(() -> showErrorDialog("Ungültige Eingabe: " + ex.getMessage()));
-            } catch (Exception ex) {
-                SwingUtilities.invokeLater(() -> showErrorDialog("Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage()));
-            }
-        }
     }
 }
