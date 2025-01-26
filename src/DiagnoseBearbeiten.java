@@ -10,6 +10,10 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Die Klasse stellt eine Benutzeroberfläche zum Bearbeiten einer bestehenden Diagnose bereit.
+ * Benutzer können die Felder bearbeiten und die Änderungen in der Datenbank speichern.
+ */
 public class DiagnoseBearbeiten extends JFrame {
     private JPanel contentPane;
     private JTextField icdTextField;
@@ -25,6 +29,14 @@ public class DiagnoseBearbeiten extends JFrame {
     private DiagnoseDAO diagnoseDAO;
     private int diagnoseID;
 
+    /**
+     * Konstruktor, der das Fenster zum Bearbeiten einer Diagnose erstellt.
+     *
+     * @param connection   Die Datenbankverbindung.
+     * @param diagnoseDAO  Das DAO-Objekt, das Datenbankoperationen für Diagnosen unterstützt.
+     * @param diagnoseID   Die ID der Diagnose, die bearbeitet werden soll.
+     * @param patientenID  Die ID des zugehörigen Patienten.
+     */
     public DiagnoseBearbeiten(Connection connection, DiagnoseDAO diagnoseDAO, int diagnoseID, int patientenID) {
         this.connection = connection;
         this.diagnoseDAO = diagnoseDAO;
@@ -34,7 +46,9 @@ public class DiagnoseBearbeiten extends JFrame {
         loadDiagnoseData();
         initializeButtonListeners();
     }
-
+    /**
+     * Initialisiert die Eigenschaften des Fensters wie Titel, Größe und Layout.
+     */
     private void initializeProperties() {
         setTitle("Diagnose bearbeiten");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -100,7 +114,9 @@ public class DiagnoseBearbeiten extends JFrame {
         buttonPanel.add(abbrechenButton);
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
     }
-
+    /**
+     * Lädt die Daten der Diagnose basierend auf der Diagnose-ID aus der Datenbank.
+     */
     private void loadDiagnoseData() {
         String query = "SELECT Diagnose, ICD, Beschreibung, Datum FROM diagnose WHERE DiagnoseID = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -117,7 +133,9 @@ public class DiagnoseBearbeiten extends JFrame {
             JOptionPane.showMessageDialog(this, "Fehler beim Laden der Diagnose: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    /**
+     * Initialisiert die Listener für die Butons und das Diagnose-Suchfeld.
+     */
     private void initializeButtonListeners() {
         speichernButton.addActionListener(this::savePerformed);
         abbrechenButton.addActionListener(e -> dispose());
@@ -149,7 +167,11 @@ public class DiagnoseBearbeiten extends JFrame {
             }
         });
     }
-
+    /**
+     * Führt eine Diagnose-Suche basierend auf dem eingegebenen Text durch.
+     * Durchsucht dabei die Datenbank und listet die ICD Codes und Diagnosen auf
+     * @param searchText Der Suchtext für die Diagnose.
+     */
     private void searchDiagnose(String searchText) {
         if (searchText.isEmpty()) {
             listModel.clear();
@@ -177,7 +199,11 @@ public class DiagnoseBearbeiten extends JFrame {
                     "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    /**
+     * Speichert die bearbeiteten Diagnose-Daten in der Datenbank.
+     *
+     * @param actionEvent Das ActionEvent, das durch das Drücken des "Speichern"-Buttons ausgelöst wurde.
+     */
     private void savePerformed(ActionEvent actionEvent) {
         String datumText = datumTextField.getText().trim();
         String icdCode = icdTextField.getText().trim();

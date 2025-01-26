@@ -4,6 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+/**
+ * Die Klasse stellt eine Benutzeroberfläche zur Verwaltung eines einzelnen Patienten bereit.
+ * Sie bietet Funktionen wie das Bearbeiten persönlicher Daten und Kontaktdaten und das Erstellen und Bearbeiten von Diagnosen
+ * sowie das Anzeigen aller Diagnosen eines Patienten.
+ */
 public class ArztPatientBearbeiten extends JFrame {
     private JMenuBar menuBar;
     private JMenu datenMenu, diagnoseMenu, fileMenu;
@@ -34,7 +39,13 @@ public class ArztPatientBearbeiten extends JFrame {
     private DiagnoseErstellen diagnoseErstellenFenster;
     private DiagnoseDAO diagnoseDAO;
 
-
+    /**
+     * Konstruktor, der das Fenster zur Bearbeitung eines Patienten initialisiert.
+     *
+     * @param connection   Verbindung zur Datenbank.
+     * @param patientDAO   Datenzugriffsschicht für Patienten.
+     * @param diagnoseDAO  Datenzugriffsschicht für Diagnosen.
+     * */
     public ArztPatientBearbeiten(Connection connection, PatientDAO patientDAO, DiagnoseDAO diagnoseDAO) {
         this.connection = connection;
         this.patientDAO = patientDAO;
@@ -47,6 +58,9 @@ public class ArztPatientBearbeiten extends JFrame {
         initializeToolBar();
     }
 
+    /**
+     * Initialisiert die Eigenschaften des Fensters wie Titel, Größe und Schließen-Verhalten
+     */
     private void initializeFrame() {
         setTitle("Arzt - Patient Bearbeiten");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -54,6 +68,9 @@ public class ArztPatientBearbeiten extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    /**
+     * Erstellt und initialisiert die Menüleiste
+     */
     private void initializeMenuBar() {
         menuBar = new JMenuBar();
 
@@ -90,6 +107,9 @@ public class ArztPatientBearbeiten extends JFrame {
         initializeMenuListeners();
     }
 
+    /**
+     * Erstellt und initialisiert die Toolbar mit Symbolen und Aktionen.
+     */
     private void initializeToolBar(){
             toolBar = new JToolBar();
             toolBar.setFloatable(false);
@@ -153,12 +173,21 @@ public class ArztPatientBearbeiten extends JFrame {
             add(toolBar, BorderLayout.NORTH);
     }
 
+    /**
+     * Skaliert ein Bild basierend auf dem angegebenen Pfad.
+     *
+     * @param path Der Pfad zum Bild.
+     * @return Das skalierte Bild.
+     */
     private Image scaleIcon(String path){
             ImageIcon icon = new ImageIcon(path);
             return icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
     }
 
     private boolean menuInitialized = false;
+    /**
+     * Initialisiert die Listener für die Menüpunkte.
+     */
     private void initializeMenuListeners() {
         if (menuInitialized) {
             return; // Verhindert, dass die Methode mehrfach ausgeführt wird
@@ -171,6 +200,9 @@ public class ArztPatientBearbeiten extends JFrame {
         menuInitialized = true;
     }
 
+    /**
+     * Fordert den Benutzer auf, eine Patienten-ID einzugeben und lädt die Patientendaten.
+     */
     private void promptForPatientId() {
         SwingUtilities.invokeLater(() -> {
             String patientenIdInput = JOptionPane.showInputDialog(this, "Bitte geben Sie die Patienten-ID ein:");
@@ -198,6 +230,9 @@ public class ArztPatientBearbeiten extends JFrame {
         });
     }
 
+    /**
+     * Zeigt ein Fenster mit den persönlichen Daten des Patienten an.
+     */
     private void showPersoenlicheDaten() {
         if (patient == null) {
             JOptionPane.showMessageDialog(this, "Kein Patient geladen.", "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -211,6 +246,9 @@ public class ArztPatientBearbeiten extends JFrame {
         }
     }
 
+    /**
+     * Zeigt ein Fenster mit den Kontaktdaten des Patienten an.
+     */
     private void showKontaktdaten() {
         if (patient == null) {
             JOptionPane.showMessageDialog(this, "Kein Patient geladen.", "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -225,6 +263,9 @@ public class ArztPatientBearbeiten extends JFrame {
         }
     }
 
+    /**
+     * Öffnet ein Fenster zum Erstellen einer neuen Diagnose für den Patienten.
+     */
     private void createDiagnosis() {
         if (patient == null) {
             JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -240,6 +281,11 @@ public class ArztPatientBearbeiten extends JFrame {
         }
     }
 
+    /**
+     * Listet alle Diagnosen für den jeweiligen Patienten mit DiagnoseID auf.
+     * Fordert den Benutzer auf eine DiagnosenID auszuwählen
+     * Öffnet ein Fenster zur Bearbeitung der Diagnose
+      */
     private void editDiagnosis(){
         if (patient == null) {
             JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -289,6 +335,9 @@ public class ArztPatientBearbeiten extends JFrame {
         }
     }
 
+    /**
+     * Zeigt ein Fenster mit allen Diagnosen des Patienten an.
+     */
     private void showAllDiagnosis() {
         if (alleDiagnosenFenster == null || !alleDiagnosenFenster.isVisible()) {
             alleDiagnosenFenster = new AlleDiagnosenAnzeigen(connection, patient.getPatientID(), patient.getNachname(), patient.getVorname());

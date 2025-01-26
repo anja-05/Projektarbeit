@@ -7,6 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Zeigt alle Diagnosen eines bestimmten Patienten an.
+ * Verwendet eine Verbindung zur Datenbank, um die Daten zu laden.
+ */
 public class AlleDiagnosenAnzeigen extends JFrame {
 
     private JTable diagnoseTable;
@@ -16,6 +20,13 @@ public class AlleDiagnosenAnzeigen extends JFrame {
     private String vorname;
     private String nachname;
 
+    /**
+     * Konstruktor der Klasse
+     * @param connection Verbindung zur Datenbank
+     * @param patientenID ID des Patienten, zur Ausgabe der Diagnosen
+     * @param nachname Nachname des Patienten
+     * @param vorname Vorname des Patienten
+     */
     public AlleDiagnosenAnzeigen(Connection connection, int patientenID, String nachname, String vorname) {
         this.connection = connection;
         this.patientenID = patientenID;
@@ -31,6 +42,9 @@ public class AlleDiagnosenAnzeigen extends JFrame {
         loadDiagnosen();
     }
 
+    /**
+     * Initialisiert die GUI-Komponenten
+     */
     private void initializeComponents() {
         // Überschrift hinzufügen
         JLabel titleLabel = new JLabel("Alle Diagnosen: " + nachname + " " + vorname, JLabel.CENTER);
@@ -56,6 +70,9 @@ public class AlleDiagnosenAnzeigen extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    /**
+     * Lädt die Diagnosen des Patienten aus der Datenbank
+     */
     private void loadDiagnosen() {
         String query = "SELECT DiagnoseID, Diagnose, ICD, Beschreibung, Datum FROM diagnose WHERE PatientenID = ?";
 

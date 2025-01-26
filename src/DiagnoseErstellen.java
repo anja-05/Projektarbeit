@@ -10,6 +10,10 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Die Klasse DiagnoseErstellen stellt eine Benutzeroberfläche zum Erstellen einer neuen Diagnose für einen Patienten bereit.
+ * Benutzer können die Diagnoseinformationen eingeben, Diagnosen/ICD Codes durchsuchen und die neue Diagnose speichern.
+ */
 public class DiagnoseErstellen extends JFrame {
     private JPanel contentPane;
     private JTextField icdTextField;
@@ -26,6 +30,13 @@ public class DiagnoseErstellen extends JFrame {
     private PatientDAO patientDAO;
     private int patientenID;
 
+    /**
+     * Konstruktor, der das Fenster zum Erstellen einer neuen Diagnose initialisiert.
+     *
+     * @param connection   Die Datenbankverbindung.
+     * @param diagnoseDAO  Das DAO-Objekt, das Datenbankoperationen für Diagnosen unterstützt.
+     * @param patientenID  Die ID des Patienten, für den die Diagnose erstellt wird.
+     */
     public DiagnoseErstellen(Connection connection, DiagnoseDAO diagnoseDAO, int patientenID) {
         this.connection = connection;
         this.diagnoseDAO = diagnoseDAO;
@@ -34,7 +45,9 @@ public class DiagnoseErstellen extends JFrame {
         initializeProperties();
         initializeButtonListeners();
     }
-
+    /**
+     * Initialisiert die Eigenschaften des Fensters wie Titel, Größe und Layout.
+     */
     private void initializeProperties() {
         setTitle("Diagnose erstellen");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -101,7 +114,9 @@ public class DiagnoseErstellen extends JFrame {
         buttonPanel.add(abbrechenButton);
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
     }
-
+    /**
+     * Initialisiert die ActionListener für die Buttons und das Diagnose-Suchfeld.
+     */
     private void initializeButtonListeners() {
         speichernButton.addActionListener(this::savePerformed);
         abbrechenButton.addActionListener(e -> returnToArztMenu());
@@ -133,7 +148,14 @@ public class DiagnoseErstellen extends JFrame {
             }
         });
     }
-
+    /**
+     * Schließt das aktuelle Fenster und kehrt zum Arzt-Menü (ArztPatientBearbeiten) zurück.
+     *
+     * Die Methode wird in einem separaten Thread ausgeführt, um sicherzustellen, dass die Benutzeroberfläche
+     * während des Vorgangs reaktionsfähig bleibt. Das Fenster für ArztPatientBearbeiten wird asynchron geöffnet.
+     *
+     * Fehler beim Laden des Arzt-Menüs werden dem Benutzer über eine Fehlermeldung angezeigt.
+     */
     private void returnToArztMenu() {
         new Thread(() -> {
             try {
@@ -148,7 +170,11 @@ public class DiagnoseErstellen extends JFrame {
             }
         }).start();
     }
-
+    /**
+     * Führt eine Diagnose-Suche basierend auf dem eingegebenen Text durch und zeigt die Ergebnisse an (ICD-Codes).
+     *
+     * @param searchText Der eingegebene Suchtext.
+     */
     private void searchDiagnose(String searchText) {
         if (searchText.isEmpty()) {
             listModel.clear();
@@ -176,7 +202,11 @@ public class DiagnoseErstellen extends JFrame {
                     "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    /**
+     * Speichert die eingegebene Diagnose in der Datenbank.
+     *
+     * @param actionEvent Das ActionEvent, das durch das Drücken des "Speichern"-Buttons ausgelöst wurde.
+     */
     private void savePerformed(ActionEvent actionEvent) {
         String datumText = datumTextField.getText().trim(); // Datum aus dem Textfeld
         String icdCode = icdTextField.getText().trim(); // ICD-Code
@@ -187,25 +217,19 @@ public class DiagnoseErstellen extends JFrame {
             JOptionPane.showMessageDialog(this, "Bitte alle Pflichtfelder ausfüllen (Datum, ICD-Code, Diagnose)!", "Fehler", JOptionPane.WARNING_MESSAGE);
             return;
         }
-
         try {
             DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
             DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             String formattedDate = LocalDate.parse(datumText, inputFormatter).format(outputFormatter);
-            // Datum in java.sql.Date umwandeln
-            java.sql.Date datum = java.sql.Date.valueOf(formattedDate); // yyyy-MM-dd Format erforderlich
+            java.sql.Date datum = java.sql.Date.valueOf(formattedDate);
 
-            int patientenID = this.patientenID;
-            String icd = icdCode;
-            // Diagnose speichern
-            Diagnose neueDiagnose = new Diagnose(0, datum, beschreibung, patientenID, icd, diagnose);
-
+            Diagnose neueDiagnose = new Diagnose(0, datum, beschreibung, patientenID, icdCode, diagnose);
             diagnoseDAO.addDiagnose(neueDiagnose);
 
             JOptionPane.showMessageDialog(this, "Diagnose erfolgreich gespeichert!");
-            dispose(); // Fenster schließen
+            dispose();
         } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "Ungültiges Datum! Bitte im Format yyyy-MM-dd eingeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Ungültiges Datum! Bitte im Format dd.MM.yyyy eingeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

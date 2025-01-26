@@ -1,6 +1,10 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
+/**
+ * Die Klasse stellt ein GUI-Fenster zur Bearbeitung der Kontaktdaten eines Patienten bereit.
+ * Die Änderungen können gespeichert oder verworfen werden
+ */
 public class ArztKontaktdaten extends JFrame {
 
     private JPanel contentPane;
@@ -16,6 +20,11 @@ public class ArztKontaktdaten extends JFrame {
     private Patient patient;
     private PatientDAO patientDAO;
 
+    /**
+     * Konstruktor: Initialisiert die GUI und benötigte Parameter
+     * @param patient Patienten-Objekt, dessen Kontaktdaten bearbeitet werden sollen
+     * @param patientDAO DAO-Objekt, das die Datenbankopertationen für Patienten unterstützt
+     */
     public ArztKontaktdaten(Patient patient, PatientDAO patientDAO) {
         this.patient = patient;
         this.patientDAO = patientDAO;
@@ -27,6 +36,9 @@ public class ArztKontaktdaten extends JFrame {
 
     }
 
+    /**
+     * Initialisiert die Eigenschaften des Fensters
+     */
     private void initializeProperties(){
         setTitle("Kontaktdaten bearbeiten");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -34,16 +46,25 @@ public class ArztKontaktdaten extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    /**
+     * Initialisiert das GUI Layout und setzt das Hauptinhaltspanel
+     */
     private void initializeView(){
         setContentPane(contentPane);
         pack();
     }
 
+    /**
+     * Initialisert die ActionListener für die Buttons "Speichern" und "Abbrechen"
+     */
     private void initializeButtonListeners() {
         speichernButton.addActionListener(this::saveChanges);
         abbrechenButton.addActionListener(e -> dispose());
     }
 
+    /**
+     * Lädt die aktuellen Kontaktdaten in die Eingabefelder des Formulars
+     */
     private void loadPatientData() {
         if (patient != null) {
             telTextField.setText(patient.getTelefon());
@@ -55,6 +76,11 @@ public class ArztKontaktdaten extends JFrame {
         }
     }
 
+    /**
+     * Speichert die Änderungen der Kontaktdaten des Patienten in der Datenbank.
+     * Überprüft die Eingaben und aktualisiert das Patient-Objekt sowie die Datenbank.
+     * @param e Das Action-Event, das durch das Drücken des "Speichern" Buttons ausgelöst wurde.
+     */
     private void saveChanges(ActionEvent e) {
         new Thread(() -> {
             try {

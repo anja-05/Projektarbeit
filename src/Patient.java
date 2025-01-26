@@ -1,5 +1,8 @@
 import java.sql.Date;
-
+/**
+ * Die Klasse Patient repräsentiert einen Patienten.
+ * Sie enthält alle relevanten Informationen über einen Patienten.
+ */
 public class Patient {
 
     private int patientID;
@@ -16,10 +19,29 @@ public class Patient {
     private String mail;
     private String bundesland;
 
-    //Standardkonstruktor dann muss man nicht alle wert übergeben
+    /**
+     * Standardkonstruktor, der ein leeres Patient-Objekt erstellt.
+     * Kann verwendet werden, wenn die Attribute später gesetzt werden sollen.
+     */
     public Patient() {
     }
-
+    /**
+     * Konstruktor, der ein Patient-Objekt mit den angegebenen Parametern erstellt.
+     *
+     * @param patientenID               Die eindeutige ID des Patienten.
+     * @param anrede                    Die Anrede des Patienten (z.B. "Herr", "Frau").
+     * @param vorname                   Der Vorname des Patienten.
+     * @param nachname                  Der Nachname des Patienten.
+     * @param geburtsdatum              Das Geburtsdatum des Patienten.
+     * @param sozialversicherungsnummer Die Sozialversicherungsnummer des Patienten.
+     * @param versicherung              Die Krankenversicherung des Patienten.
+     * @param strasse                   Die Straßenadresse des Patienten.
+     * @param postleitzahl              Die Postleitzahl der Adresse.
+     * @param ort                       Der Wohnort des Patienten.
+     * @param telefon                   Die Telefonnummer des Patienten.
+     * @param mail                      Die E-Mail-Adresse des Patienten.
+     * @param bundesland                Das Bundesland, in dem der Patient lebt.
+     */
     public Patient(int patientenID, String anrede, String vorname, String nachname, Date geburtsdatum, int sozialversicherungsnummer, String versicherung, String strasse, int postleitzahl, String ort, String telefon, String mail, String bundesland) {
         this.patientID = patientenID;
         this.anrede = anrede;
