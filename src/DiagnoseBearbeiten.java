@@ -162,11 +162,11 @@ public class DiagnoseBearbeiten extends JFrame {
             stmt.setString(1, "%" + searchText + "%");
             ResultSet rs = stmt.executeQuery();
 
-            listModel.clear(); // Liste zurücksetzen
+            listModel.clear();
             while (rs.next()) {
                 String icd = rs.getString("ICD");
                 String diagnose = rs.getString("Diagnose");
-                listModel.addElement(icd + ": " + diagnose); // ICD und Diagnose zusammen anzeigen
+                listModel.addElement(icd + ": " + diagnose);
             }
             diagnoseList.setVisible(!listModel.isEmpty());
             diagnoseList.revalidate();

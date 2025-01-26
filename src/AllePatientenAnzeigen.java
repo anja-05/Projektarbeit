@@ -27,7 +27,6 @@ public class AllePatientenAnzeigen extends JFrame {
         initializeView();
         initializeButtonListeners();
 
-        // Lade Patienten im Hintergrund
         new PatientenLadenThread().start();
     }
 

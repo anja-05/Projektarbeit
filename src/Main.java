@@ -12,7 +12,6 @@ public class Main {
     private Connection connection;
     private PatientDAO patientDAO;
 
-    //Konstruktor
     public Main(Connection connection) {
         this.connection = connection;
     }
@@ -48,7 +47,6 @@ public class Main {
 
     }
 
-    //Login
     public void showLogin() {
         if (loginGUI == null) {
             loginGUI = new Login(this);
@@ -56,7 +54,6 @@ public class Main {
         loginGUI.setVisible(true);
     }
 
-    //Menu
     public void showArztMenu() {
         if (arztMenuGUI == null) {
             arztMenuGUI = new ArztMenu(connection);

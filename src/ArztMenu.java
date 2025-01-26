@@ -6,6 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class ArztMenu extends JFrame {
     private JPanel contentPane;
     //Bausteine für MenuBar
@@ -31,6 +32,7 @@ public class ArztMenu extends JFrame {
 
     private static Connection connection;
 
+
     public ArztMenu(Connection connection) {
         this.connection = connection;
         initializePropertiesMenu();
@@ -40,6 +42,7 @@ public class ArztMenu extends JFrame {
         initializeContentPane();
     }
 
+
     private void initializePropertiesMenu() {
         setTitle("Patienten DB");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,7 +50,7 @@ public class ArztMenu extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    //Menu
+
     public void initializeMenu(){
         MenuBar= new JMenuBar();
 
@@ -66,7 +69,6 @@ public class ArztMenu extends JFrame {
         editItem.setMnemonic(KeyEvent.VK_E);
         MenuBar.add(optionMenu);
 
-        //Help
         helpMenu = new JMenu("Help");
         helpItem = new JMenuItem("Contact Support");
         helpMenu.add(helpItem);
@@ -75,7 +77,6 @@ public class ArztMenu extends JFrame {
         setJMenuBar(MenuBar);
     }
 
-    //Toolbar
     private void initializeToolBar(){
         toolBar = new JToolBar();
         toolBar.setFloatable(false);
@@ -105,18 +106,6 @@ public class ArztMenu extends JFrame {
         toolBar.add(editButton);
 
         toolBar.addSeparator();
-
-        /*druckenButton = new JButton();
-        ImageIcon imageIcon5 = new ImageIcon("Icons/printer_6932375.png");
-        Image image5 = imageIcon5.getImage();
-        Image scaledImage5 = image5.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon5 = new ImageIcon(scaledImage5);
-        druckenButton.setIcon(scaledIcon5);
-        druckenButton.setToolTipText("Drucken");
-        druckenButton.addActionListener(e -> drucken());
-        toolBar.add(druckenButton);
-
-        toolBar.addSeparator();*/
 
         allButton = new JButton();
         ImageIcon imageIcon6 = new ImageIcon("Icons/menu_7699137.png");
@@ -159,12 +148,15 @@ public class ArztMenu extends JFrame {
         exitItem.addActionListener(e -> System.exit(0));
         editItem.addActionListener(e -> patientBearbeiten());
         allItem.addActionListener(e -> allePatienten());
-        helpItem.addActionListener(e-> {
-            JOptionPane.showMessageDialog(this,
-                    "Bei Problemen kontaktieren Sie uns:\nTelefon: +49 123 456 789\nWebsite: https://www.support-website.com",
-                    "Kontakt Support",
-                    JOptionPane.INFORMATION_MESSAGE);
-        });
+        helpItem.addActionListener(e-> showSupportInfo());
+    }
+
+
+    private void showSupportInfo() {
+        JOptionPane.showMessageDialog(this,
+                "Bei Problemen kontaktieren Sie uns:\nTelefon: +49 123 456 789\nWebsite: https://www.support-website.com",
+                "Kontakt Support",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void allePatienten() {
@@ -201,8 +193,4 @@ public class ArztMenu extends JFrame {
             }
         }).start();
     }
-
-    /*private void drucken(){
-
-    }*/
 }

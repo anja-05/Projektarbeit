@@ -43,18 +43,11 @@ public class RezeptionMenu extends JFrame {
         public RezeptionMenu(Connection connection, PatientDAO patientDAO) {
             this.connection = connection;
             this.patientDAO = patientDAO;
-            try {
                 initializePropertiesMenu();
                 initializeMenu();
                 initializeButtonListeners();
                 initializeToolBar();
                 initializeContentPane();
-            }catch (NullPointerException ex) {
-                showErrorDialog("Ein Fehler ist beim Initialisieren der Benutzeroberfläche aufgetreten: GUI-Komponenten sind nicht korrekt konfiguriert.");
-                throw new IllegalStateException("Komponenten wurden nicht korrekt initialisiert.", ex);
-            } catch (Exception e) {
-                showErrorDialog("Ein unerwarteter Fehler ist aufgetreten: " + e.getMessage());
-            }
         }
 
     /**
@@ -71,7 +64,6 @@ public class RezeptionMenu extends JFrame {
      * Erstellt/konfiguriert die Menüleiste
      */
         public void initializeMenu(){
-            try {
                 MenuBar = new JMenuBar();
 
                 fileMenu = new JMenu("Datei");
@@ -101,16 +93,12 @@ public class RezeptionMenu extends JFrame {
                 MenuBar.add(helpMenu);
 
                 setJMenuBar(MenuBar);
-            }catch (Exception e) {
-                showErrorDialog("Fehler beim Initialisieren des Menüs: " + e.getMessage());
-            }
         }
 
     /**
      * Initialisiert die Toolbar mit den Buttons und dazugehörigen Aktionen
      */
         private void initializeToolBar(){
-            try {
                 toolBar = new JToolBar();
                 toolBar.setFloatable(false);
 
@@ -181,21 +169,14 @@ public class RezeptionMenu extends JFrame {
                 timer.start();
 
                 add(toolBar, BorderLayout.NORTH);
-            }catch (Exception e) {
-                showErrorDialog("Fehler beim Initialisieren der Toolbar: " + e.getMessage());
-            }
         }
 
     /**
      * Initialisiert das Haupt-Menü-Panel
      */
         private void initializeContentPane(){
-            try {
             contentPane = new JPanel(new CardLayout());
             add(contentPane, BorderLayout.CENTER);
-            } catch (Exception e) {
-                showErrorDialog("Fehler beim Initialisieren des Hauptpanels: " + e.getMessage());
-            }
         }
 
     /**
@@ -203,22 +184,15 @@ public class RezeptionMenu extends JFrame {
      * @param path der Pfad zur Bilddatei
      * @return das skalierte Bild
      */
-    private Image scaleIcon(String path){
-        try{
-            ImageIcon icon = new ImageIcon(path);
-            return icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-        } catch (Exception ex) {
-            // Behandelt Fehler, die beim Laden oder Skalieren des Bildes auftreten können
-            showErrorDialog("Fehler beim Laden des Icons: " + ex.getMessage());
-            return null;
+        private Image scaleIcon(String path){
+                ImageIcon icon = new ImageIcon(path);
+                return icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         }
-    }
 
     /**
      * Initialisiert die Button-Listener
      */
-    private void initializeButtonListeners() {
-        try{
+        private void initializeButtonListeners() {
             exitItem.addActionListener(e -> System.exit(0));
             editItem.addActionListener(e -> patientBearbeiten());
             deleteItem.addActionListener(e -> patientLöschen());
@@ -230,23 +204,20 @@ public class RezeptionMenu extends JFrame {
                         "Kontakt Support",
                         JOptionPane.INFORMATION_MESSAGE);
             });
-        } catch (Exception e) {
-            showErrorDialog("Fehler beim Initialisieren der Button-Listener: " + e.getMessage());
-        }
         }
 
     /**
      * Bearbeitet die persönlichen- und Kontakdaten eines bestehenden Patientens
      */
         private void patientBearbeiten() {
-            new Thread(() -> {
-            try{
+            new Thread(new DatabaseTask(() -> {
             String patientenIDString = JOptionPane.showInputDialog(this, "Geben Sie die Patienten-ID ein, die Sie bearbeiten möchten:");
             if (patientenIDString == null || patientenIDString.isEmpty()) return;
+                try{
                 int patientenID = Integer.parseInt(patientenIDString);
                 Patient patient = patientDAO.getPatientById(patientenID);
                 if (patient == null) {
-                    JOptionPane.showMessageDialog(this, "Kein Patient mit der ID " + patientenID + " gefunden.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, "Kein Patient mit der ID " + patientenID + " gefunden.", "Fehler", JOptionPane.ERROR_MESSAGE));
                     return;
                 }
                 SwingUtilities.invokeLater(() -> {
@@ -259,22 +230,22 @@ public class RezeptionMenu extends JFrame {
             } catch (Exception e) {
                 SwingUtilities.invokeLater(() -> showErrorDialog("Fehler beim Bearbeiten des Patienten: " + e.getMessage()));
             }
-            }).start();
+            })).start();
         }
 
     /**
      * Löscht einen Patienten aus der Datenbank
      */
     private void patientLöschen() {
-        new Thread(() -> {
-        try{
+        new Thread(new DatabaseTask(() -> {
         String patientenIDString = JOptionPane.showInputDialog(this, "Geben Sie die Patienten ID ein:");
         if (patientenIDString == null || patientenIDString.isEmpty()) return;
+            try{
             int patientenID = Integer.parseInt(patientenIDString);
 
             String patientDaten = patientDAO.getPatientDetails(patientenID);
             if (patientDaten == null) {
-                JOptionPane.showMessageDialog(this, "Der Patient mit der ID " + patientenID + " existiert nicht.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, "Kein Patient mit der ID " + patientenID + " gefunden.", "Fehler", JOptionPane.ERROR_MESSAGE));
                 return;
             }
             int confirm = JOptionPane.showConfirmDialog(this, "Möchten Sie den Patienten wirklich löschen?\n\n" + patientDaten, "Bestätigung", JOptionPane.YES_NO_OPTION);
@@ -293,7 +264,7 @@ public class RezeptionMenu extends JFrame {
         } catch (Exception e) {
             SwingUtilities.invokeLater(() -> showErrorDialog("Fehler beim Löschen des Patienten: " + e.getMessage()));
         }
-        }).start();
+        })).start();
     }
 
     /**
@@ -319,14 +290,14 @@ public class RezeptionMenu extends JFrame {
             showErrorDialog("Fehler: PatientDAO ist nicht initialisiert. Die Patienten können nicht angezeigt werden.");
             return;
         }
-        new Thread(() -> {
+        new Thread(new DatabaseTask(() -> {
         try {
             AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
             SwingUtilities.invokeLater(() -> fenster.setVisible(true));
         } catch (Exception ex) {
             SwingUtilities.invokeLater(() -> showErrorDialog("Ein unbekannter Fehler ist aufgetreten: " + ex.getMessage()));
         }
-        }).start();
+        })).start();
     }
 
     /**
@@ -335,5 +306,25 @@ public class RezeptionMenu extends JFrame {
      */
     private void showErrorDialog(String message) {
         JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
+     * Runnable-Klasse für allgemeine Datenbankoperationen
+     */
+    private class DatabaseTask implements Runnable {
+        private final Runnable operation;
+
+        public DatabaseTask(Runnable operation) {
+            this.operation = operation;
+        }
+
+        @Override
+        public void run() {
+            try {
+                operation.run();
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> showErrorDialog("Fehler: " + e.getMessage()));
+            }
+        }
     }
 }

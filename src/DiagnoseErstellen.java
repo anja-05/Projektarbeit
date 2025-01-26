@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+
 public class DiagnoseErstellen extends JFrame {
     private JPanel contentPane;
     private JTextField icdTextField;
@@ -62,11 +63,10 @@ public class DiagnoseErstellen extends JFrame {
         // Diagnose-Liste für Vorschläge
         listModel = new DefaultListModel<>();
         diagnoseList = new JList<>(listModel);
-        diagnoseList.setVisible(false); // Standardmäßig ausgeblendet
+        diagnoseList.setVisible(false);
         JScrollPane diagnoseScrollPane = new JScrollPane(diagnoseList);
         formPanel.add(diagnoseScrollPane);
 
-        // ICD-Code
         JPanel icdPanel = new JPanel(new BorderLayout());
         JLabel icdLabel = new JLabel("ICD-Code: *");
         icdTextField = new JTextField();
@@ -75,7 +75,6 @@ public class DiagnoseErstellen extends JFrame {
         icdPanel.add(icdTextField, BorderLayout.CENTER);
         formPanel.add(icdPanel);
 
-        // Beschreibung
         JPanel beschreibungPanel = new JPanel(new BorderLayout());
         JLabel beschreibungLabel = new JLabel("Beschreibung:");
         beschreibungTextArea = new JTextArea(4, 20);
@@ -84,16 +83,14 @@ public class DiagnoseErstellen extends JFrame {
         beschreibungPanel.add(beschreibungScrollPane, BorderLayout.CENTER);
         formPanel.add(beschreibungPanel);
 
-        // Datum
         JPanel datumPanel = new JPanel(new BorderLayout());
         JLabel datumLabel = new JLabel("Datum (TT.MM.JJJJ):");
         datumTextField = new JTextField();
-        datumTextField.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))); // Heute als Standardwert
+        datumTextField.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
         datumPanel.add(datumLabel, BorderLayout.NORTH);
         datumPanel.add(datumTextField, BorderLayout.CENTER);
         formPanel.add(datumPanel);
 
-        // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         speichernButton = new JButton("Speichern");
         abbrechenButton = new JButton("Abbrechen");
@@ -101,6 +98,7 @@ public class DiagnoseErstellen extends JFrame {
         buttonPanel.add(abbrechenButton);
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
     }
+
 
     private void initializeButtonListeners() {
         speichernButton.addActionListener(this::savePerformed);
@@ -117,7 +115,6 @@ public class DiagnoseErstellen extends JFrame {
             }
         });
 
-        // Auswahl aus der Liste
         diagnoseList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && diagnoseList.getSelectedValue() != null) {
                 String selectedValue = diagnoseList.getSelectedValue();
@@ -125,8 +122,8 @@ public class DiagnoseErstellen extends JFrame {
                 if(parts.length == 2) {
                     String icd = parts[0].trim();
                     String diagnose = parts[1].trim();
-                    icdTextField.setText(icd);  // Füllt das ICD-Feld
-                    diagnoseTextField.setText(diagnose);  // Füllt das Diagnose-Feld
+                    icdTextField.setText(icd);
+                    diagnoseTextField.setText(diagnose);
                 }
                 diagnoseList.setVisible(false);
                 diagnoseTextField.requestFocus();
@@ -134,8 +131,9 @@ public class DiagnoseErstellen extends JFrame {
         });
     }
 
+
     private void returnToArztMenu() {
-        new Thread(() -> {
+        new Thread(new DatabaseTask(() -> {
             try {
                 SwingUtilities.invokeLater(() -> dispose());
                 ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO,diagnoseDAO);
@@ -143,11 +141,11 @@ public class DiagnoseErstellen extends JFrame {
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() ->
                         JOptionPane.showMessageDialog(this,
-                                "Fehler beim Laden des Arztmenüs: " + ex.getMessage(),
-                                "Fehler", JOptionPane.ERROR_MESSAGE));
+                                "Fehler beim Laden des Arztmenüs: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE));
             }
-        }).start();
+        })).start();
     }
+
 
     private void searchDiagnose(String searchText) {
         if (searchText.isEmpty()) {
@@ -157,15 +155,16 @@ public class DiagnoseErstellen extends JFrame {
         }
 
         String sql = "SELECT ICD, Diagnose FROM icddiagnose WHERE Diagnose LIKE ?";
+        new Thread(new DatabaseTask(() -> {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, "%" + searchText + "%");
             ResultSet rs = stmt.executeQuery();
 
-            listModel.clear(); // Liste zurücksetzen
+            listModel.clear();
             while (rs.next()) {
                 String icd = rs.getString("ICD");
                 String diagnose = rs.getString("Diagnose");
-                listModel.addElement(icd + ": " + diagnose); // ICD und Diagnose zusammen anzeigen
+                listModel.addElement(icd + ": " + diagnose);
             }
             diagnoseList.setVisible(!listModel.isEmpty());
             diagnoseList.revalidate();
@@ -175,37 +174,68 @@ public class DiagnoseErstellen extends JFrame {
                     "Fehler bei der Diagnose-Suche: " + e.getMessage(),
                     "Fehler", JOptionPane.ERROR_MESSAGE);
         }
+        })).start();
     }
 
+
     private void savePerformed(ActionEvent actionEvent) {
-        String datumText = datumTextField.getText().trim(); // Datum aus dem Textfeld
-        String icdCode = icdTextField.getText().trim(); // ICD-Code
-        String diagnose = diagnoseTextField.getText().trim(); // Diagnose
-        String beschreibung = beschreibungTextArea.getText().trim(); // Beschreibung (optional)
+        String datumText = datumTextField.getText().trim();
+        String icdCode = icdTextField.getText().trim();
+        String diagnose = diagnoseTextField.getText().trim();
+        String beschreibung = beschreibungTextArea.getText().trim();
 
         if (datumText.isEmpty() || icdCode.isEmpty() || diagnose.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Bitte alle Pflichtfelder ausfüllen (Datum, ICD-Code, Diagnose)!", "Fehler", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
+        new Thread(new DatabaseTask(() -> {
         try {
             DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
             DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             String formattedDate = LocalDate.parse(datumText, inputFormatter).format(outputFormatter);
-            // Datum in java.sql.Date umwandeln
-            java.sql.Date datum = java.sql.Date.valueOf(formattedDate); // yyyy-MM-dd Format erforderlich
+            java.sql.Date datum = java.sql.Date.valueOf(formattedDate);
 
             int patientenID = this.patientenID;
             String icd = icdCode;
-            // Diagnose speichern
             Diagnose neueDiagnose = new Diagnose(0, datum, beschreibung, patientenID, icd, diagnose);
 
             diagnoseDAO.addDiagnose(neueDiagnose);
 
+            SwingUtilities.invokeLater(() -> {
             JOptionPane.showMessageDialog(this, "Diagnose erfolgreich gespeichert!");
-            dispose(); // Fenster schließen
+            dispose();
+            });
         } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "Ungültiges Datum! Bitte im Format yyyy-MM-dd eingeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(this, "Ungültiges Datum! Bitte im Format yyyy-MM-dd eingeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            });
+        }
+        })).start();
+    }
+
+
+    private void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
+     * Runnable für Datenbankoperationen
+     */
+    private class DatabaseTask implements Runnable {
+        private final Runnable operation;
+
+        public DatabaseTask(Runnable operation) {
+            this.operation = operation;
+        }
+
+        @Override
+        public void run() {
+            try {
+                operation.run();
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> showErrorDialog("Ein Fehler ist aufgetreten: " + e.getMessage()));
+            }
         }
     }
 }

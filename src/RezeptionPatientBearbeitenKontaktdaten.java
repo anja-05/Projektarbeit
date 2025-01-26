@@ -99,7 +99,7 @@ public class RezeptionPatientBearbeitenKontaktdaten extends JFrame {
             telefonTextField.setText(patient.getTelefon());
             mailTextField.setText(patient.getMail());
             strasseTextField.setText(patient.getStrasse());
-            postleitzahlTextField.setText(patient.getPostleitzahl() == 0 ? "" : String.valueOf(patient.getPostleitzahl())); // Leeres Feld für 0
+            postleitzahlTextField.setText(patient.getPostleitzahl() == 0 ? "" : String.valueOf(patient.getPostleitzahl()));
             ortTextField.setText(patient.getOrt());
             bundeslandComboBox.setSelectedItem(patient.getBundesland());
         }
@@ -118,22 +118,30 @@ public class RezeptionPatientBearbeitenKontaktdaten extends JFrame {
         }
         saveCurrentFieldsToPatient();
 
-        new Thread(() -> {
+        new Thread(new SavePatientDataTask()).start();
+    }
+
+    /**
+     * Runnable-Implementierung für das Speichern der Patientendaten
+     */
+    private class SavePatientDataTask implements Runnable {
+        @Override
+        public void run() {
             try {
                 boolean success = patientDAO.updatePatient(patient);
                 SwingUtilities.invokeLater(() -> {
                     if (success) {
-                        JOptionPane.showMessageDialog(this, "Daten erfolgreich gespeichert.");
+                        JOptionPane.showMessageDialog(RezeptionPatientBearbeitenKontaktdaten.this, "Daten erfolgreich gespeichert.");
                         dispose();
                     } else {
-                        JOptionPane.showMessageDialog(this, "Fehler beim Speichern des Patienten.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(RezeptionPatientBearbeitenKontaktdaten.this, "Fehler beim Speichern des Patienten.", "Fehler", JOptionPane.ERROR_MESSAGE);
                     }
                 });
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() ->
-                        JOptionPane.showMessageDialog(this, "Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE)
+                        JOptionPane.showMessageDialog(RezeptionPatientBearbeitenKontaktdaten.this, "Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE)
                 );
             }
-        }).start();
+        }
     }
 }

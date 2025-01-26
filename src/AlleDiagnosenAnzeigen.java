@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class AlleDiagnosenAnzeigen extends JFrame {
-
     private JTable diagnoseTable;
     private DefaultTableModel tableModel;
     private Connection connection;
@@ -22,17 +21,19 @@ public class AlleDiagnosenAnzeigen extends JFrame {
         this.nachname = nachname;
         this.vorname = vorname;
 
-        setTitle("Diagnosen des Patienten anzeigen");
-        setSize(800, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-
+        initializeProperties();
         initializeComponents();
         loadDiagnosen();
     }
 
+    private void initializeProperties() {
+        setTitle("Diagnosen des Patienten anzeigen");
+        setSize(800, 600);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+    }
+
     private void initializeComponents() {
-        // Überschrift hinzufügen
         JLabel titleLabel = new JLabel("Alle Diagnosen: " + nachname + " " + vorname, JLabel.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         add(titleLabel, BorderLayout.NORTH);
@@ -47,7 +48,6 @@ public class AlleDiagnosenAnzeigen extends JFrame {
         diagnoseTable = new JTable(tableModel);
         diagnoseTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        // Customize table header
         JTableHeader header = diagnoseTable.getTableHeader();
         header.setBackground(new Color(169, 169, 169)); // Dark gray color
         header.setFont(header.getFont().deriveFont(Font.BOLD));
@@ -76,5 +76,4 @@ public class AlleDiagnosenAnzeigen extends JFrame {
             JOptionPane.showMessageDialog(this, "Fehler beim Laden der Diagnosen: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

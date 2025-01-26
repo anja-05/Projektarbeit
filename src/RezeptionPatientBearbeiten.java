@@ -67,18 +67,26 @@ public class RezeptionPatientBearbeiten extends JFrame {
      * Wechselt zurück zum Hauptmenü der Rezeption und schließt das aktuelle Fenster
      */
     private void returnToRezeptionMenu() {
-        new Thread(() -> {
+        new Thread(new ReturnToMenuTask()).start();
+    }
+
+    /**
+     * Runnable-Klasse zur Navigation zurück zum Hauptmenü
+     */
+    private class ReturnToMenuTask implements Runnable {
+        @Override
+        public void run() {
             try {
                 SwingUtilities.invokeLater(() -> dispose());
                 RezeptionMenu rezeptionMenu = new RezeptionMenu(connection, patientDAO);
                 SwingUtilities.invokeLater(() -> rezeptionMenu.setVisible(true));
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() ->
-                        JOptionPane.showMessageDialog(this,
+                        JOptionPane.showMessageDialog(RezeptionPatientBearbeiten.this,
                                 "Fehler beim Laden des Hauptmenüs: " + ex.getMessage(),
                                 "Fehler", JOptionPane.ERROR_MESSAGE));
             }
-        }).start();
+        }
     }
 
     /**
@@ -87,39 +95,55 @@ public class RezeptionPatientBearbeiten extends JFrame {
      */
     private void actionPerformed(ActionEvent actionEvent) {
         if (validateFields()) {
-            new Thread(() -> {
-            try {
-            patient.setAnrede((String) AnredeComboBox.getSelectedItem());
-            patient.setVorname(VornameTextField.getText());
-            patient.setNachname(nachnameTextField.getText());
-            try {
-                String geburtsdatumString = geburtsdatumTextField.getText();
-                Date geburtsdatum = Date.valueOf(geburtsdatumString); // java.sql.Date erstellen
-                patient.setGeburtsdatum(geburtsdatum); // Funktioniert, wenn setGeburtsdatum(java.sql.Date) erwartet
-            } catch (IllegalArgumentException e) {
-                JOptionPane.showMessageDialog(null, "Ungültiges Datum. Bitte ein Datum im Format yyyy-MM-dd eingeben.");
-                return;
-            }
-            try {
-                patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Die Sozialversicherungsnummer muss eine Zahl sein.", "Fehler", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            patient.setVersicherung((String) VersicherungComboBox.getSelectedItem());
+            new Thread(new SaveAndNavigateTask()).start();
+        }
+    }
 
-            SwingUtilities.invokeLater(() -> {
-            dispose();
-            RezeptionPatientBearbeitenKontaktdaten kontaktFenster = new RezeptionPatientBearbeitenKontaktdaten(patient, patientDAO);
-            kontaktFenster.setFields(patient);
-            kontaktFenster.setVisible(true);
-            });
+    /**
+     * Runnable-Klasse zum Speichern der Daten und Weiterleitung
+     */
+    private class SaveAndNavigateTask implements Runnable {
+        @Override
+        public void run() {
+            try {
+                patient.setAnrede((String) AnredeComboBox.getSelectedItem());
+                patient.setVorname(VornameTextField.getText());
+                patient.setNachname(nachnameTextField.getText());
+                try {
+                    String geburtsdatumString = geburtsdatumTextField.getText();
+                    Date geburtsdatum = Date.valueOf(geburtsdatumString);
+                    patient.setGeburtsdatum(geburtsdatum);
+                } catch (IllegalArgumentException e) {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(RezeptionPatientBearbeiten.this,
+                                    "Ungültiges Datum. Bitte ein Datum im Format yyyy-MM-dd eingeben.",
+                                    "Fehler", JOptionPane.ERROR_MESSAGE));
+                    return;
+                }
+                try {
+                    patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
+                } catch (NumberFormatException ex) {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(RezeptionPatientBearbeiten.this,
+                                    "Die Sozialversicherungsnummer muss eine Zahl sein.",
+                                    "Fehler", JOptionPane.ERROR_MESSAGE));
+                    return;
+                }
+                patient.setVersicherung((String) VersicherungComboBox.getSelectedItem());
+
+                SwingUtilities.invokeLater(() -> {
+                    dispose();
+                    RezeptionPatientBearbeitenKontaktdaten kontaktFenster = new RezeptionPatientBearbeitenKontaktdaten(patient, patientDAO);
+                    kontaktFenster.setFields(patient);
+                    kontaktFenster.setVisible(true);
+                });
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() ->
-                JOptionPane.showMessageDialog(this, "Ein unbekannter Fehler ist aufgetreten: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE));
+                        JOptionPane.showMessageDialog(RezeptionPatientBearbeiten.this,
+                                "Ein unbekannter Fehler ist aufgetreten: " + ex.getMessage(),
+                                "Fehler", JOptionPane.ERROR_MESSAGE));
             }
-        }).start();
-     }
+        }
     }
 
     /**
@@ -152,7 +176,7 @@ public class RezeptionPatientBearbeiten extends JFrame {
             java.sql.Date geburtsdatum = patient.getGeburtsdatum();
             if (geburtsdatum != null) {
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-                geburtsdatumTextField.setText(formatter.format(geburtsdatum)); // Formatieren und setzen
+                geburtsdatumTextField.setText(formatter.format(geburtsdatum));
             }
             svnTextField.setText(String.valueOf(patient.getSozialversicherungsnummer()));
             VersicherungComboBox.setSelectedItem(patient.getVersicherung());

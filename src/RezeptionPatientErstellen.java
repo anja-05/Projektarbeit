@@ -89,8 +89,8 @@ public class RezeptionPatientErstellen extends JFrame {
                 patient.setNachname(nachnameTextField.getText());
                 String geburtsdatumString = geburtsdatumTextField.getText();
                 try {
-                    Date geburtsdatum = Date.valueOf(geburtsdatumString); // java.sql.Date erstellen
-                    patient.setGeburtsdatum(geburtsdatum); // Funktioniert, wenn setGeburtsdatum(java.sql.Date) erwartet
+                    Date geburtsdatum = Date.valueOf(geburtsdatumString);
+                    patient.setGeburtsdatum(geburtsdatum);
                 } catch (IllegalArgumentException e) {
                     showErrorDialog("Ungültiges Datum. Bitte ein Datum im Format yyyy-MM-dd eingeben.");
                     return;
@@ -103,7 +103,6 @@ public class RezeptionPatientErstellen extends JFrame {
                 }
                 patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
 
-                // Weiterleitung mit demselben Patient-Objekt
                 dispose();
                 RezeptionPatientKontaktdaten kontaktFenster = new RezeptionPatientKontaktdaten(patient, patientDAO);
                 kontaktFenster.setFields(patient);
@@ -151,7 +150,7 @@ public class RezeptionPatientErstellen extends JFrame {
             java.sql.Date geburtsdatum = patient.getGeburtsdatum();
             if (geburtsdatum != null) {
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-                geburtsdatumTextField.setText(formatter.format(geburtsdatum)); // Formatieren und setzen
+                geburtsdatumTextField.setText(formatter.format(geburtsdatum));
             }
             svnTextField.setText(String.valueOf(patient.getSozialversicherungsnummer()));
             versicherungComboBox.setSelectedItem(patient.getVersicherung());

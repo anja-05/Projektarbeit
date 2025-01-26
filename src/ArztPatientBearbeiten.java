@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+
 public class ArztPatientBearbeiten extends JFrame {
     private JMenuBar menuBar;
     private JMenu datenMenu, diagnoseMenu, fileMenu;
@@ -47,12 +48,14 @@ public class ArztPatientBearbeiten extends JFrame {
         initializeToolBar();
     }
 
+
     private void initializeFrame() {
         setTitle("Arzt - Patient Bearbeiten");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 400);
         setLocationRelativeTo(null);
     }
+
 
     private void initializeMenuBar() {
         menuBar = new JMenuBar();
@@ -67,12 +70,10 @@ public class ArztPatientBearbeiten extends JFrame {
         // Menü für Diagnosen
         diagnoseMenu = new JMenu("Diagnose");
         diagnoseNeuItem = new JMenuItem("Neu erstellen");
-        //medikamenteLoeschenItem = new JMenuItem("Löschen");
         diagnoseBearbeitenItem = new JMenuItem("Bearbeiten");
         diagnoseAlleAnzeigenItem = new JMenuItem("Alle anzeigen");
         diagnoseMenu.add(diagnoseNeuItem);
         diagnoseMenu.add(diagnoseBearbeitenItem);
-       // medikamenteMenu.add(medikamenteLoeschenItem);
         diagnoseMenu.add(diagnoseAlleAnzeigenItem);
 
         // Menü für File
@@ -89,6 +90,7 @@ public class ArztPatientBearbeiten extends JFrame {
 
         initializeMenuListeners();
     }
+
 
     private void initializeToolBar(){
             toolBar = new JToolBar();
@@ -161,7 +163,7 @@ public class ArztPatientBearbeiten extends JFrame {
     private boolean menuInitialized = false;
     private void initializeMenuListeners() {
         if (menuInitialized) {
-            return; // Verhindert, dass die Methode mehrfach ausgeführt wird
+            return;
         }
         persoenlicheDatenItem.addActionListener(e -> showPersoenlicheDaten());
         kontaktdatenItem.addActionListener(e -> showKontaktdaten());
@@ -170,6 +172,7 @@ public class ArztPatientBearbeiten extends JFrame {
         diagnoseAlleAnzeigenItem.addActionListener(e -> showAllDiagnosis());
         menuInitialized = true;
     }
+
 
     private void promptForPatientId() {
         SwingUtilities.invokeLater(() -> {
@@ -198,17 +201,20 @@ public class ArztPatientBearbeiten extends JFrame {
         });
     }
 
+
     private void showPersoenlicheDaten() {
         if (patient == null) {
             JOptionPane.showMessageDialog(this, "Kein Patient geladen.", "Fehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        SwingUtilities.invokeLater(() -> {
         if (persoenlicheDatenFenster == null || !persoenlicheDatenFenster.isVisible()) {
             persoenlicheDatenFenster = new ArztPersoenlicheDaten(patient, patientDAO);
             persoenlicheDatenFenster.setVisible(true);
         } else {
             persoenlicheDatenFenster.toFront();
         }
+        });
     }
 
     private void showKontaktdaten() {
@@ -225,6 +231,7 @@ public class ArztPatientBearbeiten extends JFrame {
         }
     }
 
+
     private void createDiagnosis() {
         if (patient == null) {
             JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -232,13 +239,16 @@ public class ArztPatientBearbeiten extends JFrame {
         }
 
         int patientenID = patient.getPatientID();
+        SwingUtilities.invokeLater(() -> {
         if (diagnoseErstellenFenster == null || !diagnoseErstellenFenster.isVisible()) {
             diagnoseErstellenFenster = new DiagnoseErstellen(connection, new DiagnoseDAO(connection), patientenID);
             diagnoseErstellenFenster.setVisible(true);
         } else {
             diagnoseErstellenFenster.toFront();
         }
+        });
     }
+
 
     private void editDiagnosis(){
         if (patient == null) {
@@ -248,7 +258,6 @@ public class ArztPatientBearbeiten extends JFrame {
 
         int patientId = patient.getPatientID();
 
-        // Abrufen aller Diagnosen für den ausgewählten Patienten
         String diagnoseListQuery = "SELECT DiagnoseID, Diagnose FROM diagnose WHERE PatientenID = ?";
         try (PreparedStatement stmt = connection.prepareStatement(diagnoseListQuery)) {
             stmt.setInt(1, patientId);
@@ -266,7 +275,6 @@ public class ArztPatientBearbeiten extends JFrame {
                 return;
             }
 
-            // Dem Benutzer die Diagnosen anzeigen und Auswahl einholen
             String diagnoseIDInput = JOptionPane.showInputDialog(this,
                     "Bitte geben Sie die Diagnose-ID ein, die Sie bearbeiten möchten:\n\n" + diagnoseOptions.toString(),
                     "Diagnose bearbeiten",
@@ -290,12 +298,19 @@ public class ArztPatientBearbeiten extends JFrame {
     }
 
     private void showAllDiagnosis() {
+        if (patient == null) {
+            JOptionPane.showMessageDialog(this, "Kein Patient ausgewählt.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        SwingUtilities.invokeLater(() -> {
         if (alleDiagnosenFenster == null || !alleDiagnosenFenster.isVisible()) {
             alleDiagnosenFenster = new AlleDiagnosenAnzeigen(connection, patient.getPatientID(), patient.getNachname(), patient.getVorname());
             alleDiagnosenFenster.setVisible(true);
         } else {
             alleDiagnosenFenster.toFront();
         }
+        });
     }
 }
 

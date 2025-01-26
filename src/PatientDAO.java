@@ -24,7 +24,7 @@ public class PatientDAO {
                 return resultSet.getInt("bundeslandID");
             }
         }
-        return -1; // Wenn nicht gefunden
+        return -1;
     }
 
     public int getKrankenkassenID(String versicherung) throws SQLException {
@@ -62,21 +62,20 @@ public class PatientDAO {
             int rowsInserted = preparedStatement.executeUpdate();
 
             if (rowsInserted > 0) {
-                // Abrufen der automatisch generierten ID
                 try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        patient.setPatientID(generatedKeys.getInt(1)); // Setze die generierte ID im Patient-Objekt
+                        patient.setPatientID(generatedKeys.getInt(1));
                         System.out.println("Patient erfolgreich gespeichert mit ID: " + patient.getPatientID());
                     } else {
                         throw new SQLException("Fehler beim Abrufen der generierten ID.");
                     }
                 }
-                return true; // Speichern war erfolgreich
+                return true;
             }
-            return false; // Kein Datensatz eingefügt
+            return false;
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // Fehler beim Speichern
+            return false;
         }
     }
 
@@ -195,7 +194,6 @@ public class PatientDAO {
                 }
             }
         } catch (SQLException e) {
-            // Log exception (z. B. mit Logger)
             return "Fehler beim Abrufen der Patientendaten: " + e.getMessage();
         }
     }
@@ -226,7 +224,6 @@ public class PatientDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
-                // Patient-Objekt erstellen und Felder setzen
                 Patient patient = new Patient();
                 patient.setPatientID(resultSet.getInt("PatientenID"));
                 patient.setAnrede(resultSet.getString("Anrede"));
@@ -242,12 +239,12 @@ public class PatientDAO {
                 patient.setMail(resultSet.getString("Mail"));
                 patient.setBundesland(resultSet.getString("Bundesland"));
 
-                return patient; // Rückgabe des Patient-Objekts
+                return patient;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return null; // Kein Patient gefunden
+        return null;
     }
 
     public boolean updatePatient(Patient patient) {

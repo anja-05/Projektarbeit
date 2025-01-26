@@ -140,30 +140,58 @@ public class RezeptionPatientKontaktdaten extends JFrame {
      * @param actionEvent ausgelöstetes actionEvent
      */
     private void speichernPerformed(ActionEvent actionEvent) {
-            Object selectedItem = bundeslandComboBox.getSelectedItem();
-            if (selectedItem == null || selectedItem.toString().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Bitte wählen Sie ein Bundesland aus.", "Fehler", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+        new Thread(new SavePatientTask()).start();
+    }
 
-            saveCurrentFieldsToPatient();
+    /**
+     * Runnable-Implementierung für das Speichern der Patientendaten
+     */
+    private class SavePatientTask implements Runnable {
+        @Override
+        public void run() {
+            try {
+                patient.setTelefon(telTextField.getText());
+                patient.setMail(mailTextField.getText());
+                patient.setStrasse(strasseTextField.getText());
 
-            new Thread(() -> {
                 try {
-                    boolean success = patientDAO.savePatient(patient);
-                    SwingUtilities.invokeLater(() -> {
-                        if (success) {
-                            JOptionPane.showMessageDialog(this, "Patient erfolgreich gespeichert.");
-                            dispose();
-                        } else {
-                            JOptionPane.showMessageDialog(this, "Fehler beim Speichern des Patienten.", "Fehler", JOptionPane.ERROR_MESSAGE);
-                        }
-                    });
-                } catch (Exception e) {
-                    SwingUtilities.invokeLater(() ->
-                            JOptionPane.showMessageDialog(this, "Ein unerwarteter Fehler ist aufgetreten.", "Fehler", JOptionPane.ERROR_MESSAGE)
-                    );
+                    patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
+                } catch (NumberFormatException ex) {
+                    showErrorDialog("Die Postleitzahl muss eine Zahl sein.");
+                    return;
                 }
-            }).start();
+
+                patient.setOrt(ortTextField.getText());
+
+                Object selectedItem = bundeslandComboBox.getSelectedItem();
+                if (selectedItem == null || selectedItem.toString().isEmpty()) {
+                    showErrorDialog("Bitte wählen Sie ein Bundesland aus.");
+                    return;
+                }
+                patient.setBundesland(selectedItem.toString());
+
+                boolean success = patientDAO.savePatient(patient);
+                SwingUtilities.invokeLater(() -> {
+                    if (success) {
+                        JOptionPane.showMessageDialog(RezeptionPatientKontaktdaten.this, "Patient erfolgreich gespeichert.");
+                        dispose();
+                    } else {
+                        showErrorDialog("Fehler beim Speichern des Patienten.");
+                    }
+                });
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() -> showErrorDialog("Fehler: " + ex.getMessage()));
+            }
         }
     }
+
+    /**
+     * Zeigt Fehlermeldung in einem Dialog an
+     * @param message Fehlermeldung
+     */
+    private void showErrorDialog(String message) {
+        SwingUtilities.invokeLater(() ->
+                JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE)
+        );
+    }
+}

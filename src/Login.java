@@ -41,26 +41,16 @@ public class Login extends JFrame {
      * Swing Komponenten werden an das JPanel gebunden
      */
     private void initializeView() {
-        try {
             setContentPane(contentPane);
             pack();
-        }catch (NullPointerException ex) {
-            showErrorDialog("GUI-Komponenten wurden nicht korrekt initialisiert. Bitte überprüfen Sie die Konfiguration.");
-            throw new IllegalStateException("GUI-Komponenten wurden nicht korrekt initialisiert.", ex);
-        }
     }
 
     /**
      * Initialisiert die Button-Listener (OKButton, abbrechenButton).
      */
     private void initializeButtonListeners() {
-        try {
             OKButton.addActionListener(this::actionPerformed);
             abbrechenButton.addActionListener(e -> System.exit(0));
-        }catch (NullPointerException ex) {
-            showErrorDialog("Buttons wurden nicht korrekt initialisiert. Bitte überprüfen Sie die Konfiguration.");
-            throw new IllegalStateException("Buttons wurden nicht korrekt initialisiert.", ex);
-        }
     }
 
     /**
@@ -75,7 +65,6 @@ public class Login extends JFrame {
             if (selectedRole == null || username.isBlank() || password.isBlank()) {
                 throw new IllegalArgumentException("Bitte füllen Sie alle Felder aus.");
             }
-
             if ("Arzt".equals(selectedRole) && "Arzt".equals(username) && "1234".equals(password)) {
                 JOptionPane.showMessageDialog(this, "Login erfolgreich! Willkommen, Arzt/Ärztin.");
                 main.showArztMenu();
@@ -100,8 +89,7 @@ public class Login extends JFrame {
      */
     private void showWarningDialog(String message) {
         JOptionPane.showMessageDialog(
-                this, message, "Eingabefehler", JOptionPane.WARNING_MESSAGE
-        );
+                this, message, "Eingabefehler", JOptionPane.WARNING_MESSAGE);
     }
 
     /**
@@ -109,9 +97,6 @@ public class Login extends JFrame {
      * @param message Fehlermeldung, die angezeigt werden soll
      */
     private void showErrorDialog(String message) {
-        JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE
-        );
+        JOptionPane.showMessageDialog(this, message, "Fehler", JOptionPane.ERROR_MESSAGE);
     }
 }
-
-
