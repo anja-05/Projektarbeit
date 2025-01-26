@@ -158,7 +158,7 @@ public class ArztPatientBearbeiten extends JFrame {
             Image scaledImage6 = image6.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
             ImageIcon scaledIcon6 = new ImageIcon(scaledImage6);
             allButton.setIcon(scaledIcon6);
-            allButton.setToolTipText("Alle Patienten");
+            allButton.setToolTipText("Alle Diagnosen");
             allButton.addActionListener(e -> showAllDiagnosis());
             toolBar.add(allButton);
 
