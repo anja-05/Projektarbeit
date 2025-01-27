@@ -232,7 +232,7 @@ public class DiagnoseErstellen extends JFrame {
         String beschreibung = beschreibungTextArea.getText().trim();
 
         if (datumText.isEmpty() || icdCode.isEmpty() || diagnose.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Bitte alle Pflichtfelder ausfüllen (Datum, ICD-Code, Diagnose)!", "Fehler", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Bitte alle Pflichtfelder ausfüllen!", "Fehler", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -266,17 +266,11 @@ public class DiagnoseErstellen extends JFrame {
                     });
                 } catch (IllegalArgumentException e) {
                     SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                            DiagnoseErstellen.this,
-                            "Ungültiges Datum! Bitte im Format dd.MM.yyyy eingeben.",
-                            "Fehler",
-                            JOptionPane.ERROR_MESSAGE
+                            DiagnoseErstellen.this, "Ungültiges Datum! Bitte im Format dd.MM.yyyy eingeben.", "Fehler", JOptionPane.ERROR_MESSAGE
                     ));
                 } catch (Exception e) {
                     SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                            DiagnoseErstellen.this,
-                            "Fehler beim Speichern der Diagnose: " + e.getMessage(),
-                            "Fehler",
-                            JOptionPane.ERROR_MESSAGE
+                            DiagnoseErstellen.this, "Fehler beim Speichern der Diagnose: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE
                     ));
                 }
             }
