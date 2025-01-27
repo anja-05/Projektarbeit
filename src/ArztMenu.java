@@ -187,40 +187,47 @@ public class ArztMenu extends JFrame {
      * Zeigt ein neues Fenster mit einer Liste aller Patienten an
      */
     private void allePatienten() {
-        new Thread(() -> {
-            try {
-                PatientDAO patientDAO = new PatientDAO(connection);
-                AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
-                SwingUtilities.invokeLater(() -> fenster.setVisible(true));
-            } catch (Exception e) {
-                SwingUtilities.invokeLater(() ->
-                        JOptionPane.showMessageDialog(this,
-                                "Fehler beim Laden der Patienten: " + e.getMessage(),
-                                "Fehler", JOptionPane.ERROR_MESSAGE)
-                );
+        class LoadAllPatientsTask implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    PatientDAO patientDAO = new PatientDAO(connection);
+                    AllePatientenAnzeigen fenster = new AllePatientenAnzeigen(patientDAO);
+                    SwingUtilities.invokeLater(() -> fenster.setVisible(true));
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            ArztMenu.this,
+                            "Fehler beim Laden der Patienten: " + e.getMessage(),
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                }
             }
-        }).start();
+        }Thread thread = new Thread(new LoadAllPatientsTask());
+        thread.start();
     }
 
     /**
      * Öffnet ein Fenster zum Bearbeiten eines Patienten (Persönliche Daten und Kontaktdaten) und zum Erstellen und Bearbeiten von Diagnosen
      */
     private void patientBearbeiten(){
-        new Thread(() -> {
-            try {
-                PatientDAO patientDAO = new PatientDAO(connection);
-                DiagnoseDAO diagnoseDAO = new DiagnoseDAO(connection);
-                SwingUtilities.invokeLater(() -> {
-                    ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO, diagnoseDAO);
-                    arztPatientBearbeiten.setVisible(true);
-                });
-            } catch (Exception e) {
-                SwingUtilities.invokeLater(() ->
-                        JOptionPane.showMessageDialog(this,
-                                "Fehler beim Bearbeiten des Patienten: " + e.getMessage(),
-                                "Fehler", JOptionPane.ERROR_MESSAGE)
-                );
+        class EditPatientTask implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    PatientDAO patientDAO = new PatientDAO(connection);
+                    DiagnoseDAO diagnoseDAO = new DiagnoseDAO(connection);
+                    SwingUtilities.invokeLater(() -> {
+                        ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO, diagnoseDAO);
+                        arztPatientBearbeiten.setVisible(true);
+                    });
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            ArztMenu.this, "Fehler beim Bearbeiten des Patienten: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE
+                    ));
+                }
             }
-        }).start();
+        }Thread thread = new Thread(new EditPatientTask());
+        thread.start();
     }
 }

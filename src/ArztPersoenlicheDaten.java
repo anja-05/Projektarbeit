@@ -79,32 +79,38 @@ public class ArztPersoenlicheDaten extends JFrame {
      */
     private void saveChanges(ActionEvent e) {
         if (validateFields()) {
-            new Thread(() -> {
-                try {
-                    // Patient-Daten aktualisieren
-                    patient.setAnrede((String) anredeComboBox.getSelectedItem());
-                    patient.setVorname(vornameTextField.getText());
-                    patient.setNachname(nachnameTextField.getText());
-                    patient.setGeburtsdatum(java.sql.Date.valueOf(geburtsdatumTextField.getText()));
-                    patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
-                    patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
+            class SaveChangesTask implements Runnable {
+                @Override
+                public void run() {
+                    try {
+                        patient.setAnrede((String) anredeComboBox.getSelectedItem());
+                        patient.setVorname(vornameTextField.getText());
+                        patient.setNachname(nachnameTextField.getText());
+                        patient.setGeburtsdatum(java.sql.Date.valueOf(geburtsdatumTextField.getText()));
+                        patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
+                        patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
 
-                    // Daten speichern
-                    boolean success = patientDAO.updatePersoenlicheDaten(patient);
-                    SwingUtilities.invokeLater(() -> {
-                        if (success) {
-                            JOptionPane.showMessageDialog(this, "Daten erfolgreich gespeichert.");
-                            dispose();
-                        } else {
-                            JOptionPane.showMessageDialog(this, "Fehler beim Speichern.", "Fehler", JOptionPane.ERROR_MESSAGE);
-                        }
-                    });
-                } catch (Exception ex) {
-                    SwingUtilities.invokeLater(() ->
-                            JOptionPane.showMessageDialog(this, "Ungültige Eingabe: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE)
-                );
+                        boolean success = patientDAO.updatePersoenlicheDaten(patient);
+                        SwingUtilities.invokeLater(() -> {
+                            if (success) {
+                                JOptionPane.showMessageDialog(ArztPersoenlicheDaten.this, "Daten erfolgreich gespeichert.");
+                                dispose();
+                            } else {
+                                JOptionPane.showMessageDialog(ArztPersoenlicheDaten.this, "Fehler beim Speichern.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                            }
+                        });
+                    } catch (Exception ex) {
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                                ArztPersoenlicheDaten.this,
+                                "Ungültige Eingabe: " + ex.getMessage(),
+                                "Fehler",
+                                JOptionPane.ERROR_MESSAGE
+                        ));
+                    }
                 }
-            }).start();
+            }
+            Thread thread = new Thread(new SaveChangesTask());
+            thread.start();
         }
     }
     /**

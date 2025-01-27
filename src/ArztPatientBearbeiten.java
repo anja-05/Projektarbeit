@@ -192,7 +192,7 @@ public class ArztPatientBearbeiten extends JFrame {
      */
     private void initializeMenuListeners() {
         if (menuInitialized) {
-            return; // Verhindert, dass die Methode mehrfach ausgeführt wird
+            return;
         }
         persoenlicheDatenItem.addActionListener(e -> showPersoenlicheDaten());
         kontaktdatenItem.addActionListener(e -> showKontaktdaten());
@@ -206,6 +206,39 @@ public class ArztPatientBearbeiten extends JFrame {
      * Fordert den Benutzer auf, eine Patienten-ID einzugeben und lädt die Patientendaten.
      */
     private void promptForPatientId() {
+        class LoadPatientTask implements Runnable {
+            private final int patientId;
+
+            public LoadPatientTask(int patientId) {
+                this.patientId = patientId;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    patient = patientDAO.getPatientById(patientId);
+                    SwingUtilities.invokeLater(() -> {
+                        if (patient == null) {
+                            JOptionPane.showMessageDialog(ArztPatientBearbeiten.this,
+                                    "Patient mit der ID " + patientId + " wurde nicht gefunden.",
+                                    "Fehler", JOptionPane.ERROR_MESSAGE);
+                            dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(ArztPatientBearbeiten.this,
+                                    "Patient gefunden: " + patient.getVorname() + " " + patient.getNachname());
+                        }
+                    });
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            ArztPatientBearbeiten.this,
+                            "Fehler beim Laden des Patienten: " + ex.getMessage(),
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                    dispose();
+                }
+            }
+        }
         SwingUtilities.invokeLater(() -> {
             String patientenIdInput = JOptionPane.showInputDialog(this, "Bitte geben Sie die Patienten-ID ein:");
             if (patientenIdInput == null) {
@@ -217,14 +250,8 @@ public class ArztPatientBearbeiten extends JFrame {
                 JOptionPane.showMessageDialog(this, "Keine gültige ID eingegeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
             }
             try {
-                int patientId = Integer.parseInt(patientenIdInput);
-                patient = patientDAO.getPatientById(patientId);
-                if (patient == null) {
-                    JOptionPane.showMessageDialog(this, "Patient mit der ID " + patientId + " wurde nicht gefunden.", "Fehler", JOptionPane.ERROR_MESSAGE);
-                    dispose();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Patient gefunden: " + patient.getVorname() + " " + patient.getNachname());
-                }
+                int patientId = Integer.parseInt(patientenIdInput.trim());
+                new Thread(new LoadPatientTask(patientId)).start();
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Die ID muss eine Zahl sein.", "Fehler", JOptionPane.ERROR_MESSAGE);
                 dispose();
@@ -294,56 +321,53 @@ public class ArztPatientBearbeiten extends JFrame {
             return;
         }
 
-        int patientId = patient.getPatientID();
+        class LoadDiagnosesTask implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    List<Diagnose> diagnoseList = diagnoseDAO.getDiagnoseByPatientId(patient.getPatientID());
 
-        try {
-            // Abrufen aller Diagnosen für den ausgewählten Patienten
-            List<Diagnose> diagnoseList = diagnoseDAO.getDiagnoseByPatientId(patientId);
+                    if (diagnoseList.isEmpty()) {
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                                ArztPatientBearbeiten.this, "Keine Diagnosen für diesen Patienten gefunden.", "Information", JOptionPane.INFORMATION_MESSAGE
+                        ));
+                        return;
+                    }
 
-            if (diagnoseList.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Keine Diagnosen für diesen Patienten gefunden.", "Information", JOptionPane.INFORMATION_MESSAGE);
-                return;
+                    StringBuilder diagnoseOptions = new StringBuilder();
+                    for (Diagnose diagnose : diagnoseList) {
+                        diagnoseOptions.append(diagnose.getDiagnoseID())
+                                .append(": ")
+                                .append(diagnose.getDiagnose())
+                                .append("\n");
+                    }
+
+                    SwingUtilities.invokeLater(() -> {
+                        String diagnoseIDInput = JOptionPane.showInputDialog(ArztPatientBearbeiten.this,
+                                "Bitte geben Sie die Diagnose-ID ein, die Sie bearbeiten möchten:\n\n" + diagnoseOptions, "Diagnose bearbeiten", JOptionPane.QUESTION_MESSAGE);
+                        if (diagnoseIDInput != null && !diagnoseIDInput.trim().isEmpty()) {
+                            try {
+                                int diagnoseID = Integer.parseInt(diagnoseIDInput.trim());
+                                boolean validDiagnoseID = diagnoseList.stream().anyMatch(diagnose -> diagnose.getDiagnoseID() == diagnoseID);
+                                if (validDiagnoseID) {
+                                    DiagnoseBearbeiten diagnoseBearbeitenFenster = new DiagnoseBearbeiten(connection, diagnoseDAO, diagnoseID, patient.getPatientID());
+                                    diagnoseBearbeitenFenster.setVisible(true);
+                                } else {
+                                    JOptionPane.showMessageDialog(ArztPatientBearbeiten.this, "Die eingegebene Diagnose-ID ist ungültig.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                                }
+                            } catch (NumberFormatException ex) {
+                                JOptionPane.showMessageDialog(ArztPatientBearbeiten.this, "Die eingegebene Diagnose-ID ist ungültig.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    });
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            ArztPatientBearbeiten.this, "Fehler beim Abrufen der Diagnosen: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE
+                    ));
+                }
             }
-
-            // Diagnosen als Auswahl anzeigen
-            StringBuilder diagnoseOptions = new StringBuilder();
-            for (Diagnose diagnose : diagnoseList) {
-                diagnoseOptions.append(diagnose.getDiagnoseID())
-                        .append(": ")
-                        .append(diagnose.getDiagnose())
-                        .append("\n");
-            }
-
-            String diagnoseIDInput = JOptionPane.showInputDialog(this,
-                    "Bitte geben Sie die Diagnose-ID ein, die Sie bearbeiten möchten:\n\n" + diagnoseOptions.toString(),
-                    "Diagnose bearbeiten",
-                    JOptionPane.QUESTION_MESSAGE);
-
-            if (diagnoseIDInput == null || diagnoseIDInput.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Keine Diagnose-ID eingegeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Validierung der eingegebenen Diagnose-ID
-            int diagnoseID = Integer.parseInt(diagnoseIDInput.trim());
-
-            boolean validDiagnoseID = diagnoseList.stream()
-                    .anyMatch(diagnose -> diagnose.getDiagnoseID() == diagnoseID);
-
-            if (!validDiagnoseID) {
-                JOptionPane.showMessageDialog(this, "Die eingegebene Diagnose-ID ist ungültig.", "Fehler", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Öffne das Fenster zur Bearbeitung der Diagnose
-            DiagnoseBearbeiten diagnoseBearbeitenFenster = new DiagnoseBearbeiten(connection, diagnoseDAO, diagnoseID, patientId);
-            diagnoseBearbeitenFenster.setVisible(true);
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Die eingegebene Diagnose-ID ist ungültig.", "Fehler", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Abrufen der Diagnosen: " + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
         }
+        new Thread(new LoadDiagnosesTask()).start();
     }
 
     /**

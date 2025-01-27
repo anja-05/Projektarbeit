@@ -4,7 +4,6 @@ import java.sql.Date;
  * Sie enthält alle relevanten Informationen über einen Patienten.
  */
 public class Patient {
-
     private int patientID;
     private String anrede;
     private String vorname;

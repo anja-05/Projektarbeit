@@ -33,10 +33,10 @@ public class DiagnoseBearbeiten extends JFrame {
     /**
      * Konstruktor, der das Fenster zum Bearbeiten einer Diagnose erstellt.
      *
-     * @param connection   Die Datenbankverbindung.
-     * @param diagnoseDAO  Das DAO-Objekt, das Datenbankoperationen für Diagnosen unterstützt.
-     * @param diagnoseID   Die ID der Diagnose, die bearbeitet werden soll.
-     * @param patientenID  Die ID des zugehörigen Patienten.
+     * @param connection  Die Datenbankverbindung.
+     * @param diagnoseDAO Das DAO-Objekt, das Datenbankoperationen für Diagnosen unterstützt.
+     * @param diagnoseID  Die ID der Diagnose, die bearbeitet werden soll.
+     * @param patientenID Die ID des zugehörigen Patienten.
      */
     public DiagnoseBearbeiten(Connection connection, DiagnoseDAO diagnoseDAO, int diagnoseID, int patientenID) {
         this.connection = connection;
@@ -121,15 +121,36 @@ public class DiagnoseBearbeiten extends JFrame {
      * Lädt die Daten der Diagnose basierend auf der Diagnose-ID aus der Datenbank.
      */
     private void loadDiagnoseData() {
-        Diagnose diagnose = diagnoseDAO.getDiagnoseById(diagnoseID);
-        if (diagnose != null) {
-            diagnoseTextField.setText(diagnose.getDiagnose());
-            icdTextField.setText(diagnose.getIcd());
-            beschreibungTextArea.setText(diagnose.getBeschreibung());
-            datumTextField.setText(diagnose.getDatum().toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-        } else {
-            JOptionPane.showMessageDialog(this, "Keine Diagnose gefunden!", "Fehler", JOptionPane.ERROR_MESSAGE);
+        class LoadDiagnoseTask implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    Diagnose diagnose = diagnoseDAO.getDiagnoseById(diagnoseID);
+                    SwingUtilities.invokeLater(() -> {
+                        if (diagnose != null) {
+                            diagnoseTextField.setText(diagnose.getDiagnose());
+                            icdTextField.setText(diagnose.getIcd());
+                            beschreibungTextArea.setText(diagnose.getBeschreibung());
+                            datumTextField.setText(
+                                    diagnose.getDatum().toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                            );
+                        } else {
+                            JOptionPane.showMessageDialog(DiagnoseBearbeiten.this,
+                                    "Keine Diagnose gefunden!", "Fehler", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            DiagnoseBearbeiten.this,
+                            "Fehler beim Laden der Diagnose: " + e.getMessage(),
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                }
+            }
         }
+        Thread thread = new Thread(new LoadDiagnoseTask());
+        thread.start();
     }
 
     /**
@@ -150,7 +171,6 @@ public class DiagnoseBearbeiten extends JFrame {
             }
         });
 
-        // Auswahl aus der Liste
         diagnoseList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && diagnoseList.getSelectedValue() != null) {
                 String selectedValue = diagnoseList.getSelectedValue();
@@ -158,17 +178,19 @@ public class DiagnoseBearbeiten extends JFrame {
                 if (parts.length == 2) {
                     String icd = parts[0].trim();
                     String diagnose = parts[1].trim();
-                    icdTextField.setText(icd);  // Füllt das ICD-Feld
-                    diagnoseTextField.setText(diagnose);  // Füllt das Diagnose-Feld
+                    icdTextField.setText(icd);
+                    diagnoseTextField.setText(diagnose);
                 }
                 diagnoseList.setVisible(false);
                 diagnoseTextField.requestFocus();
             }
         });
     }
+
     /**
      * Führt eine Diagnose-Suche basierend auf dem eingegebenen Text durch.
      * Durchsucht dabei die Datenbank und listet die ICD Codes und Diagnosen auf
+     *
      * @param searchText Der Suchtext für die Diagnose.
      */
     private void searchDiagnose(String searchText) {
@@ -178,17 +200,39 @@ public class DiagnoseBearbeiten extends JFrame {
             return;
         }
 
-        // Aufruf der DiagnoseDAO-Methode
-        List<String> result = diagnoseDAO.searchDiagnose(searchText);
+        class SearchDiagnoseTask implements Runnable {
+            private final String searchText;
 
-        listModel.clear();
-        for (String entry : result) {
-            listModel.addElement(entry);
+            public SearchDiagnoseTask(String searchText) {
+                this.searchText = searchText;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    List<String> result = diagnoseDAO.searchDiagnose(searchText);
+                    SwingUtilities.invokeLater(() -> {
+                        listModel.clear();
+                        for (String entry : result) {
+                            listModel.addElement(entry);
+                        }
+                        diagnoseList.setVisible(!result.isEmpty());
+                        diagnoseList.revalidate();
+                        diagnoseList.repaint();
+                    });
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            DiagnoseBearbeiten.this,
+                            "Fehler bei der Diagnose-Suche: " + e.getMessage(),
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                }
+            }
+
         }
-
-        diagnoseList.setVisible(!result.isEmpty());
-        diagnoseList.revalidate();
-        diagnoseList.repaint();
+        Thread thread = new Thread(new SearchDiagnoseTask(searchText));
+        thread.start();
     }
 
     /**
@@ -207,21 +251,44 @@ public class DiagnoseBearbeiten extends JFrame {
             return;
         }
 
-        try {
-            // Datum formatieren
-            LocalDate datum = LocalDate.parse(datumText, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-            java.sql.Date sqlDatum = java.sql.Date.valueOf(datum);
+        class SaveDiagnoseTask implements Runnable {
+            private final String datumText;
+            private final String icdCode;
+            private final String diagnose;
+            private final String beschreibung;
 
-            // Diagnose-Objekt mit neuen Daten erstellen
-            Diagnose updatedDiagnose = new Diagnose(diagnoseID, sqlDatum, beschreibung, 0, icdCode, diagnose);
+            public SaveDiagnoseTask(String datumText, String icdCode, String diagnose, String beschreibung) {
+                this.datumText = datumText;
+                this.icdCode = icdCode;
+                this.diagnose = diagnose;
+                this.beschreibung = beschreibung;
+            }
 
-            // Änderungen speichern
-            diagnoseDAO.updateDiagnose(updatedDiagnose);
+            @Override
+            public void run() {
+                try {
+                    LocalDate datum = LocalDate.parse(datumText, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                    java.sql.Date sqlDatum = java.sql.Date.valueOf(datum);
 
-            JOptionPane.showMessageDialog(this, "Diagnose erfolgreich gespeichert!");
-            dispose();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Speichern der Diagnose: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
+                    Diagnose updatedDiagnose = new Diagnose(diagnoseID, sqlDatum, beschreibung, 0, icdCode, diagnose);
+
+                    diagnoseDAO.updateDiagnose(updatedDiagnose);
+
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(DiagnoseBearbeiten.this, "Diagnose erfolgreich gespeichert!");
+                        dispose();
+                    });
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            DiagnoseBearbeiten.this,
+                            "Fehler beim Speichern der Diagnose: " + e.getMessage(),
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                }
+            }
         }
+        Thread thread = new Thread(new SaveDiagnoseTask(datumText, icdCode, diagnose, beschreibung));
+        thread.start();
     }
 }

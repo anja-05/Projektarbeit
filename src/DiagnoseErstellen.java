@@ -4,9 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -34,9 +31,9 @@ public class DiagnoseErstellen extends JFrame {
     /**
      * Konstruktor, der das Fenster zum Erstellen einer neuen Diagnose initialisiert.
      *
-     * @param connection   Die Datenbankverbindung.
-     * @param diagnoseDAO  Das DAO-Objekt, das Datenbankoperationen für Diagnosen unterstützt.
-     * @param patientenID  Die ID des Patienten, für den die Diagnose erstellt wird.
+     * @param connection  Die Datenbankverbindung.
+     * @param diagnoseDAO Das DAO-Objekt, das Datenbankoperationen für Diagnosen unterstützt.
+     * @param patientenID Die ID des Patienten, für den die Diagnose erstellt wird.
      */
     public DiagnoseErstellen(Connection connection, DiagnoseDAO diagnoseDAO, int patientenID) {
         this.connection = connection;
@@ -46,6 +43,7 @@ public class DiagnoseErstellen extends JFrame {
         initializeProperties();
         initializeButtonListeners();
     }
+
     /**
      * Initialisiert die Eigenschaften des Fensters wie Titel, Größe und Layout.
      */
@@ -102,7 +100,7 @@ public class DiagnoseErstellen extends JFrame {
         JPanel datumPanel = new JPanel(new BorderLayout());
         JLabel datumLabel = new JLabel("Datum (TT.MM.JJJJ):");
         datumTextField = new JTextField();
-        datumTextField.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))); // Heute als Standardwert
+        datumTextField.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
         datumPanel.add(datumLabel, BorderLayout.NORTH);
         datumPanel.add(datumTextField, BorderLayout.CENTER);
         formPanel.add(datumPanel);
@@ -134,16 +132,15 @@ public class DiagnoseErstellen extends JFrame {
             }
         });
 
-        // Auswahl aus der Liste
         diagnoseList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && diagnoseList.getSelectedValue() != null) {
                 String selectedValue = diagnoseList.getSelectedValue();
                 String[] parts = selectedValue.split(":");
-                if(parts.length == 2) {
+                if (parts.length == 2) {
                     String icd = parts[0].trim();
                     String diagnose = parts[1].trim();
-                    icdTextField.setText(icd);  // Füllt das ICD-Feld
-                    diagnoseTextField.setText(diagnose);  // Füllt das Diagnose-Feld
+                    icdTextField.setText(icd);
+                    diagnoseTextField.setText(diagnose);
                 }
                 diagnoseList.setVisible(false);
                 diagnoseTextField.requestFocus();
@@ -153,26 +150,33 @@ public class DiagnoseErstellen extends JFrame {
 
     /**
      * Schließt das aktuelle Fenster und kehrt zum Arzt-Menü (ArztPatientBearbeiten) zurück.
-     *
+     * <p>
      * Die Methode wird in einem separaten Thread ausgeführt, um sicherzustellen, dass die Benutzeroberfläche
      * während des Vorgangs reaktionsfähig bleibt. Das Fenster für ArztPatientBearbeiten wird asynchron geöffnet.
-     *
+     * <p>
      * Fehler beim Laden des Arzt-Menüs werden dem Benutzer über eine Fehlermeldung angezeigt.
      */
     private void returnToArztMenu() {
-        new Thread(() -> {
-            try {
-                SwingUtilities.invokeLater(() -> dispose());
-                ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO,diagnoseDAO);
-                SwingUtilities.invokeLater(() -> arztPatientBearbeiten.setVisible(true));
-            } catch (Exception ex) {
-                SwingUtilities.invokeLater(() ->
-                        JOptionPane.showMessageDialog(this,
-                                "Fehler beim Laden des Arztmenüs: " + ex.getMessage(),
-                                "Fehler", JOptionPane.ERROR_MESSAGE));
+        class ReturnToArztMenuTask implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    SwingUtilities.invokeLater(() -> dispose());
+                    ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO, diagnoseDAO);
+                    SwingUtilities.invokeLater(() -> arztPatientBearbeiten.setVisible(true));
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            DiagnoseErstellen.this,
+                            "Fehler beim Laden des Arztmenüs: " + ex.getMessage(),
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                }
             }
-        }).start();
+        }Thread thread = new Thread(new ReturnToArztMenuTask());
+        thread.start();
     }
+
     /**
      * Führt eine Diagnose-Suche basierend auf dem eingegebenen Text durch und zeigt die Ergebnisse an (ICD-Codes).
      *
@@ -185,14 +189,35 @@ public class DiagnoseErstellen extends JFrame {
             return;
         }
 
-        // Aufruf von DiagnoseDAO
-        List<String> result = diagnoseDAO.searchDiagnose(searchText);
+        class SearchDiagnoseTask implements Runnable {
+            private final String searchText;
 
-        listModel.clear();
-        for (String entry : result) {
-            listModel.addElement(entry);
+            SearchDiagnoseTask(String searchText) {
+                this.searchText = searchText;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    List<String> result = diagnoseDAO.searchDiagnose(searchText);
+                    SwingUtilities.invokeLater(() -> {
+                        listModel.clear();
+                        for (String entry : result) {
+                            listModel.addElement(entry);
+                        }
+                        diagnoseList.setVisible(!result.isEmpty());
+                    });
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            DiagnoseErstellen.this,
+                            "Fehler bei der Diagnose-Suche: " + e.getMessage(),
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                }
+            }
         }
-        diagnoseList.setVisible(!result.isEmpty());
+        new Thread(new SearchDiagnoseTask(searchText)).start();
     }
 
     /**
@@ -201,29 +226,62 @@ public class DiagnoseErstellen extends JFrame {
      * @param actionEvent Das ActionEvent, das durch das Drücken des "Speichern"-Buttons ausgelöst wurde.
      */
     private void savePerformed(ActionEvent actionEvent) {
-        String datumText = datumTextField.getText().trim(); // Datum aus dem Textfeld
-        String icdCode = icdTextField.getText().trim(); // ICD-Code
-        String diagnose = diagnoseTextField.getText().trim(); // Diagnose
-        String beschreibung = beschreibungTextArea.getText().trim(); // Beschreibung (optional)
+        String datumText = datumTextField.getText().trim();
+        String icdCode = icdTextField.getText().trim();
+        String diagnose = diagnoseTextField.getText().trim();
+        String beschreibung = beschreibungTextArea.getText().trim();
 
         if (datumText.isEmpty() || icdCode.isEmpty() || diagnose.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Bitte alle Pflichtfelder ausfüllen (Datum, ICD-Code, Diagnose)!", "Fehler", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        try {
-            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String formattedDate = LocalDate.parse(datumText, inputFormatter).format(outputFormatter);
-            java.sql.Date datum = java.sql.Date.valueOf(formattedDate);
 
-            Diagnose neueDiagnose = new Diagnose(0, datum, beschreibung, patientenID, icdCode, diagnose);
-            diagnoseDAO.addDiagnose(neueDiagnose);
+        class SaveDiagnoseTask implements Runnable {
+            private final String datumText;
+            private final String icdCode;
+            private final String diagnose;
+            private final String beschreibung;
 
-            JOptionPane.showMessageDialog(this, "Diagnose erfolgreich gespeichert!");
-            dispose();
-        } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "Ungültiges Datum! Bitte im Format dd.MM.yyyy eingeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+            public SaveDiagnoseTask(String datumText, String icdCode, String diagnose, String beschreibung) {
+                this.datumText = datumText;
+                this.icdCode = icdCode;
+                this.diagnose = diagnose;
+                this.beschreibung = beschreibung;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                    DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    String formattedDate = LocalDate.parse(datumText, inputFormatter).format(outputFormatter);
+                    java.sql.Date datum = java.sql.Date.valueOf(formattedDate);
+
+                    Diagnose neueDiagnose = new Diagnose(0, datum, beschreibung, patientenID, icdCode, diagnose);
+                    diagnoseDAO.addDiagnose(neueDiagnose);
+
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(DiagnoseErstellen.this, "Diagnose erfolgreich gespeichert!");
+                        dispose();
+                    });
+                } catch (IllegalArgumentException e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            DiagnoseErstellen.this,
+                            "Ungültiges Datum! Bitte im Format dd.MM.yyyy eingeben.",
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            DiagnoseErstellen.this,
+                            "Fehler beim Speichern der Diagnose: " + e.getMessage(),
+                            "Fehler",
+                            JOptionPane.ERROR_MESSAGE
+                    ));
+                }
+            }
         }
+        Thread thread = new Thread(new SaveDiagnoseTask(datumText, icdCode, diagnose, beschreibung));
+        thread.start();
     }
 }
-

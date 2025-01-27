@@ -3,9 +3,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -51,7 +48,6 @@ public class AlleDiagnosenAnzeigen extends JFrame {
      * Initialisiert die GUI-Komponenten, einschließlich der Tabelle und ihrer Kopfzeilen.
      */
     private void initializeComponents() {
-        // Überschrift hinzufügen
         JLabel titleLabel = new JLabel("Alle Diagnosen: " + nachname + " " + vorname, JLabel.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         add(titleLabel, BorderLayout.NORTH);
@@ -68,7 +64,7 @@ public class AlleDiagnosenAnzeigen extends JFrame {
 
         // Customize table header
         JTableHeader header = diagnoseTable.getTableHeader();
-        header.setBackground(new Color(169, 169, 169)); // Dark gray color
+        header.setBackground(new Color(169, 169, 169));
         header.setFont(header.getFont().deriveFont(Font.BOLD));
 
         JScrollPane scrollPane = new JScrollPane(diagnoseTable);
@@ -80,26 +76,35 @@ public class AlleDiagnosenAnzeigen extends JFrame {
      * und fügt sie der Tabelle hinzu.
      */
     private void loadDiagnosen() {
-        try {
-            // Diagnosen über DiagnoseDAO abrufen
-            List<Diagnose> diagnosen = diagnoseDAO.getDiagnoseByPatientId(patientenID);
-
-            for (Diagnose diagnose : diagnosen) {
-                // Erstelle eine Zeile aus den Diagnose-Werten
-                Object[] row = {
-                        diagnose.getDiagnoseID(),
-                        diagnose.getDiagnose(),
-                        diagnose.getIcd(),
-                        diagnose.getBeschreibung(),
-                        diagnose.getDatum()
-                };
-                tableModel.addRow(row); // Zeile zur Tabelle hinzufügen
-            }
-
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Laden der Diagnosen: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
+        new Thread(new LoadDiagnosenTask()).start();
     }
 
-
+    /**
+     * Runnable-Implementierung für das Laden der Diagnosen
+     */
+    private class LoadDiagnosenTask implements Runnable {
+        @Override
+        public void run() {
+            try {
+                List<Diagnose> diagnosen = diagnoseDAO.getDiagnoseByPatientId(patientenID);
+                SwingUtilities.invokeLater(() -> {
+                    for (Diagnose diagnose : diagnosen) {
+                        Object[] row = {
+                                diagnose.getDiagnoseID(),
+                                diagnose.getDiagnose(),
+                                diagnose.getIcd(),
+                                diagnose.getBeschreibung(),
+                                diagnose.getDatum()
+                        };
+                        tableModel.addRow(row);
+                    }
+                });
+            } catch (RuntimeException e) {
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(AlleDiagnosenAnzeigen.this, "Fehler beim Laden der Diagnosen: " + e.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE
+                        )
+                );
+            }
+        }
+    }
 }

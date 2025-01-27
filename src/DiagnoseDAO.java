@@ -139,5 +139,4 @@ public class DiagnoseDAO {
         }
         return diagnoseList;
     }
-
 }
