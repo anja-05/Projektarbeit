@@ -269,10 +269,18 @@ public class PatientDAO {
      */
     public boolean deletePatient(int patientenID) throws SQLException {
         String deleteSQL = "DELETE FROM patient WHERE PatientenID = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
+        String deleteDiagnoseSQL = "DELETE FROM diagnose WHERE patientenID = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL);
+             PreparedStatement deleteDiagnoseStmt = connection.prepareStatement(deleteDiagnoseSQL)) {
+
             preparedStatement.setInt(1, patientenID);
             int affectedRows = preparedStatement.executeUpdate();
-            return affectedRows > 0; // Gibt true zurück, wenn ein Datensatz gelöscht wurde
+
+            deleteDiagnoseStmt.setInt(1, patientenID);
+            deleteDiagnoseStmt.executeUpdate();
+
+            return affectedRows > 0;
         }
     }
 
