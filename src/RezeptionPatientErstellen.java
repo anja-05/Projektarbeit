@@ -64,16 +64,7 @@ public class RezeptionPatientErstellen extends JFrame {
      */
     private void initializeButtonListeners() {
         weiterButton.addActionListener(this::actionPerformed);
-        abbrechenButton.addActionListener(e -> returnToRezeptionMenu());
-    }
-
-    /**
-     * Schließt das aktuelle Fenster und kehrt zum Hauptmenü der Rezeption zurück
-     */
-    private void returnToRezeptionMenu() {
-        this.dispose();
-        RezeptionMenu rezeptionMenu = new RezeptionMenu(connection, patientDAO);
-        rezeptionMenu.setVisible(true);
+        abbrechenButton.addActionListener(e -> dispose());
     }
 
     /**

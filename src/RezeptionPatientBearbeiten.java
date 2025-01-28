@@ -60,14 +60,7 @@ public class RezeptionPatientBearbeiten extends JFrame {
      */
     private void initializeButtonListeners() {
         weiterButton.addActionListener(this::actionPerformed);
-        abbrechenButton.addActionListener(e -> returnToRezeptionMenu());
-    }
-
-    /**
-     * Wechselt zurück zum Hauptmenü der Rezeption und schließt das aktuelle Fenster
-     */
-    private void returnToRezeptionMenu() {
-        new Thread(new ReturnToMenuTask()).start();
+        abbrechenButton.addActionListener(e -> dispose());
     }
 
     /**
