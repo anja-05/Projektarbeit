@@ -83,7 +83,7 @@ public class PatientDAO {
             preparedStatement.setString(2, patient.getVorname());
             preparedStatement.setString(3, patient.getNachname());
             preparedStatement.setDate(4, patient.getGeburtsdatum());
-            preparedStatement.setInt(5, patient.getSozialversicherungsnummer());
+            preparedStatement.setLong(5, patient.getSozialversicherungsnummer());
             preparedStatement.setString(6, patient.getStrasse());
             preparedStatement.setInt(7, patient.getPostleitzahl());
             preparedStatement.setString(8, patient.getOrt());
@@ -136,7 +136,7 @@ public class PatientDAO {
                 patient.setVorname(resultSet.getString("vorname"));
                 patient.setNachname(resultSet.getString("nachname"));
                 patient.setGeburtsdatum(resultSet.getDate("geburtsdatum"));
-                patient.setSozialversicherungsnummer(resultSet.getInt("sozialversicherungsnummer"));
+                patient.setSozialversicherungsnummer(resultSet.getLong("sozialversicherungsnummer"));
                 patient.setVersicherung(resultSet.getString("versicherung"));
                 patient.setStrasse(resultSet.getString("strasse"));
                 patient.setPostleitzahl(resultSet.getInt("postleitzahl"));
@@ -313,7 +313,7 @@ public class PatientDAO {
                 patient.setVorname(resultSet.getString("Vorname"));
                 patient.setNachname(resultSet.getString("Nachname"));
                 patient.setGeburtsdatum(resultSet.getDate("Geburtsdatum"));
-                patient.setSozialversicherungsnummer(resultSet.getInt("Sozialversicherungsnummer"));
+                patient.setSozialversicherungsnummer(resultSet.getLong("Sozialversicherungsnummer"));
                 patient.setVersicherung(resultSet.getString("Krankenkasse"));
                 patient.setStrasse(resultSet.getString("Strasse"));
                 patient.setPostleitzahl(resultSet.getInt("Postleitzahl"));
@@ -348,7 +348,7 @@ public class PatientDAO {
             preparedStatement.setString(2, patient.getVorname());
             preparedStatement.setString(3, patient.getNachname());
             preparedStatement.setDate(4, patient.getGeburtsdatum());
-            preparedStatement.setInt(5, patient.getSozialversicherungsnummer());
+            preparedStatement.setLong(5, patient.getSozialversicherungsnummer());
             preparedStatement.setInt(6, getKrankenkassenID(patient.getVersicherung()));
             preparedStatement.setString(7, patient.getTelefon());
             preparedStatement.setString(8, patient.getMail());
@@ -381,7 +381,7 @@ public class PatientDAO {
             preparedStatement.setString(2, patient.getVorname());
             preparedStatement.setString(3, patient.getNachname());
             preparedStatement.setDate(4, patient.getGeburtsdatum());
-            preparedStatement.setInt(5, patient.getSozialversicherungsnummer());
+            preparedStatement.setLong(5, patient.getSozialversicherungsnummer());
             preparedStatement.setInt(6, getKrankenkassenID(patient.getVersicherung()));
             preparedStatement.setInt(7, patient.getPatientID());
             return preparedStatement.executeUpdate() > 0;

@@ -96,7 +96,7 @@ public class RezeptionPatientErstellen extends JFrame {
                     return;
                 }
                 try {
-                    patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
+                    patient.setSozialversicherungsnummer(Long.parseLong(svnTextField.getText()));
                 } catch (NumberFormatException ex) {
                     showErrorDialog("Die Sozialversicherungsnummer muss eine Zahl sein.");
                     return;

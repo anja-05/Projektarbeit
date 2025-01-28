@@ -87,7 +87,7 @@ public class ArztPersoenlicheDaten extends JFrame {
                         patient.setVorname(vornameTextField.getText());
                         patient.setNachname(nachnameTextField.getText());
                         patient.setGeburtsdatum(java.sql.Date.valueOf(geburtsdatumTextField.getText()));
-                        patient.setSozialversicherungsnummer(Integer.parseInt(svnTextField.getText()));
+                        patient.setSozialversicherungsnummer(Long.parseLong(svnTextField.getText()));
                         patient.setVersicherung((String) versicherungComboBox.getSelectedItem());
 
                         boolean success = patientDAO.updatePersoenlicheDaten(patient);

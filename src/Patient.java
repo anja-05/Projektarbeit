@@ -9,7 +9,7 @@ public class Patient {
     private String vorname;
     private String nachname;
     private Date geburtsdatum;
-    private int sozialversicherungsnummer;
+    private Long sozialversicherungsnummer;
     private String versicherung;
     private String strasse;
     private int postleitzahl;
@@ -41,7 +41,7 @@ public class Patient {
      * @param mail                      Die E-Mail-Adresse des Patienten.
      * @param bundesland                Das Bundesland, in dem der Patient lebt.
      */
-    public Patient(int patientenID, String anrede, String vorname, String nachname, Date geburtsdatum, int sozialversicherungsnummer, String versicherung, String strasse, int postleitzahl, String ort, String telefon, String mail, String bundesland) {
+    public Patient(int patientenID, String anrede, String vorname, String nachname, Date geburtsdatum, long sozialversicherungsnummer, String versicherung, String strasse, int postleitzahl, String ort, String telefon, String mail, String bundesland) {
         this.patientID = patientenID;
         this.anrede = anrede;
         this.vorname = vorname;
@@ -92,10 +92,10 @@ public class Patient {
         this.geburtsdatum = geburtsdatum;
     }
 
-    public int getSozialversicherungsnummer() {
+    public long getSozialversicherungsnummer() {
         return sozialversicherungsnummer;
     }
-    public void setSozialversicherungsnummer(int sozialversicherungsnummer) {
+    public void setSozialversicherungsnummer(long sozialversicherungsnummer) {
         this.sozialversicherungsnummer = sozialversicherungsnummer;
     }
 
