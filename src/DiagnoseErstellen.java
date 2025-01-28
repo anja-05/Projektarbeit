@@ -149,35 +149,6 @@ public class DiagnoseErstellen extends JFrame {
     }
 
     /**
-     * Schließt das aktuelle Fenster und kehrt zum Arzt-Menü (ArztPatientBearbeiten) zurück.
-     * <p>
-     * Die Methode wird in einem separaten Thread ausgeführt, um sicherzustellen, dass die Benutzeroberfläche
-     * während des Vorgangs reaktionsfähig bleibt. Das Fenster für ArztPatientBearbeiten wird asynchron geöffnet.
-     * <p>
-     * Fehler beim Laden des Arzt-Menüs werden dem Benutzer über eine Fehlermeldung angezeigt.
-     */
-    private void returnToArztMenu() {
-        class ReturnToArztMenuTask implements Runnable {
-            @Override
-            public void run() {
-                try {
-                    SwingUtilities.invokeLater(() -> dispose());
-                    ArztPatientBearbeiten arztPatientBearbeiten = new ArztPatientBearbeiten(connection, patientDAO, diagnoseDAO);
-                    SwingUtilities.invokeLater(() -> arztPatientBearbeiten.setVisible(true));
-                } catch (Exception ex) {
-                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                            DiagnoseErstellen.this,
-                            "Fehler beim Laden des Arztmenüs: " + ex.getMessage(),
-                            "Fehler",
-                            JOptionPane.ERROR_MESSAGE
-                    ));
-                }
-            }
-        }Thread thread = new Thread(new ReturnToArztMenuTask());
-        thread.start();
-    }
-
-    /**
      * Führt eine Diagnose-Suche basierend auf dem eingegebenen Text durch und zeigt die Ergebnisse an (ICD-Codes).
      *
      * @param searchText Der eingegebene Suchtext.
