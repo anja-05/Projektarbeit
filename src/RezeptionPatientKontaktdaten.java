@@ -156,10 +156,14 @@ public class RezeptionPatientKontaktdaten extends JFrame {
                 patient.setStrasse(strasseTextField.getText());
 
                 try {
-                    patient.setPostleitzahl(Integer.parseInt(pznTextField.getText()));
-                } catch (NumberFormatException ex) {
+                    String plzInput = pznTextField.getText();
+                    if (plzInput == null || plzInput.trim().isEmpty()) {
+                        patient.setPostleitzahl(0);
+                    } else {
+                        patient.setPostleitzahl(Integer.parseInt(plzInput.trim()));
+                    }
+                } catch (NumberFormatException e) {
                     showErrorDialog("Die Postleitzahl muss eine Zahl sein.");
-                    return;
                 }
 
                 patient.setOrt(ortTextField.getText());
