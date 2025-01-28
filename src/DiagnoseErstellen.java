@@ -119,7 +119,7 @@ public class DiagnoseErstellen extends JFrame {
      */
     private void initializeButtonListeners() {
         speichernButton.addActionListener(this::savePerformed);
-        abbrechenButton.addActionListener(e -> returnToArztMenu());
+        abbrechenButton.addActionListener(e -> dispose());
 
         diagnoseTextField.addKeyListener(new KeyAdapter() {
             @Override
